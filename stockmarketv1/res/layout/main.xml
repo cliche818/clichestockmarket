@@ -44,6 +44,17 @@
 
     		</LinearLayout>
     		
+			<EditText 
+		   			android:layout_width="200px" 
+		   			android:layout_height="40px" 
+		   			android:id="@+id/setNoOfStocks"
+		   			android:hint="Number of Stocks"
+		   			android:textSize="16px"
+		   			android:digits="0123456789"
+		   			android:inputType="number"
+		   			android:singleLine="True">
+		   	</EditText>    
+			    
    			<Button 
 	   			android:text="Insert into simulation" 
 	   			android:id="@+id/insert_button" 

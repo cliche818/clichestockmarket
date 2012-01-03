@@ -40,6 +40,7 @@ public class Main extends ListActivity {
 	
 	// input variables
 	EditText setSymbol;
+	EditText setNoOfStocks;
 
 	// output variables
 	// these symbols allow any methods in this class to use them
@@ -93,7 +94,7 @@ public class Main extends ListActivity {
 				updatedRawData = getStockInfo(stockToUpdate);
 				String[] tokens = updatedRawData.split(",");
 				//since I know stock quote is the 2nd token
-				sDbHelper.updateStock(cur.getInt(0), stockToUpdate, tokens[1]);
+				sDbHelper.updateStock(cur.getInt(0), stockToUpdate, tokens[1], cur.getString(3), cur.getString(4));
 				cur.moveToNext();
 			}
 			
@@ -197,7 +198,9 @@ public class Main extends ListActivity {
 		
 		// connect reference variables with our view objects
 		setSymbol = (EditText) findViewById(R.id.setSymbol);
-
+		setNoOfStocks = (EditText) findViewById(R.id.setNoOfStocks);
+		setNoOfStocks.setEnabled(false);
+		
 		symbolOut = (TextView) findViewById(R.id.stockSymbolOutput);
 		priceOut = (TextView) findViewById(R.id.stockPriceOutput);
 		changePercentageOut = (TextView) findViewById(R.id.stockChangePercentageOutput);
@@ -290,21 +293,27 @@ public class Main extends ListActivity {
 					
 					//only now is it possible to add stock symbols to database
 					insertSimulation.setEnabled(true);
+					setNoOfStocks.setEnabled(true);
 				}
 			}
 		});
 		//-----------------------------------------End of Core of the Get Stock Module---------------------------------------------------
+		
 		
 		//-----------------------------------------Start of Core of Simulation Module in GetStockQuote Tab----------------------------------------------------
 		insertSimulation.setOnClickListener(new View.OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				createStock();
+				String noOfStocksString = setNoOfStocks.getText().toString();
+				//useless line down below
+				//int noOfStocks = Integer.parseInt(noOfStocksString);
+				createStock(noOfStocksString);
 			}	
 		});
 		
 		//-----------------------------------------End of Core of Simulation Module in GetStockQuote Tab----------------------------------------------------
+		
 		
 		//-----------------------------------------Start of Core of Simulation Module in GetStockQuote Tab----------------------------------------------------
 		refreshSimulation.setOnClickListener(new View.OnClickListener() {
@@ -447,8 +456,8 @@ public class Main extends ListActivity {
 		return stockTxt;
 	}
 	
-	private void createStock(){
-		long insertMsg = sDbHelper.createStock(stockSymbol, stockQuote);
+	private void createStock(String noOfStocksString){
+		long insertMsg = sDbHelper.createStock(stockSymbol, stockQuote, stockQuote, noOfStocksString);
 		if (insertMsg == -1){
 			/*Toast noInsert = Toast.makeText(Main.this,
 					"You had already added this stock symbol before!",
@@ -474,8 +483,8 @@ public class Main extends ListActivity {
         Cursor c = sDbHelper.fetchAllStocks();
         startManagingCursor(c);
                 
-        String[] from = new String[] { StockDBAdapter.STOCK_KEY, StockDBAdapter.STOCK_PRICE };
-        int[] to = new int[] { R.id.stockText, R.id.stockText2 };
+        String[] from = new String[] { StockDBAdapter.STOCK_KEY, StockDBAdapter.STOCK_PRICE_NEW, StockDBAdapter.STOCK_PRICE_OLD, StockDBAdapter.STOCK_NUM };
+        int[] to = new int[] { R.id.stockText, R.id.stockText2, R.id.stockText3, R.id.stockText4 };
         
         // Now create an array adapter and set it to display using our row
         SimpleCursorAdapter stocks =

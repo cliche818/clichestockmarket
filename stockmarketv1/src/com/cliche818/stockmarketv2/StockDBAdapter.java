@@ -10,8 +10,10 @@ import android.util.Log;
 
 public class StockDBAdapter {
     	public static final String STOCK_KEY = "stockSymbol"; //used to be known as key_title
-    	public static final String STOCK_PRICE = "stockPrice"; //used to be known as key_body
+    	public static final String STOCK_PRICE_OLD = "stockPriceOld"; //used to be known as key_body
     	public static final String KEY_ROWID = "_id";
+    	public static final String STOCK_PRICE_NEW = "stockPriceNew";
+    	public static final String STOCK_NUM = "stocksNumber";
     	
     	private static final String DATABASE_NAME = "data";
     	private static final int DATABASE_VERSION = 1;
@@ -23,7 +25,7 @@ public class StockDBAdapter {
 	   
     	private static final String DATABASE_CREATE =
 		        "create table stocks (_id integer primary key autoincrement, "
-		        + "stockSymbol text unique not null, stockPrice text not null);";
+		        + "stockSymbol text unique not null, stockPriceNew text not null, stockPriceOld text no null, stocksNumber);";
 	   
     	private final Context sCtx;
     	
@@ -89,10 +91,12 @@ public class StockDBAdapter {
          * @param body the body of the note
          * @return rowId or -1 if failed
          */
-        public long createStock(String stockSymbol, String stockPrice) {
+        public long createStock(String stockSymbol, String stockPriceOld, String stockPriceNew, String stocksNumber) {
             ContentValues initialValues = new ContentValues();
             initialValues.put(STOCK_KEY, stockSymbol);
-            initialValues.put(STOCK_PRICE, stockPrice);
+            initialValues.put(STOCK_PRICE_NEW, stockPriceNew);
+            initialValues.put(STOCK_PRICE_OLD, stockPriceOld);
+            initialValues.put(STOCK_NUM, stocksNumber);
             return sDb.insert(DATABASE_TABLE, null, initialValues);
         }
 
@@ -115,7 +119,7 @@ public class StockDBAdapter {
         public Cursor fetchAllStocks() {
 
             return sDb.query(DATABASE_TABLE, new String[] {KEY_ROWID, STOCK_KEY,
-            		STOCK_PRICE}, null, null, null, null, null);
+            		STOCK_PRICE_NEW, STOCK_PRICE_OLD, STOCK_NUM}, null, null, null, null, null);
         }
 
         /**
@@ -130,7 +134,7 @@ public class StockDBAdapter {
             Cursor sCursor =
 
                 sDb.query(true, DATABASE_TABLE, new String[] {KEY_ROWID,
-                		STOCK_KEY, STOCK_PRICE}, KEY_ROWID + "=" + rowId, null,
+                		STOCK_KEY, STOCK_PRICE_NEW, STOCK_PRICE_OLD, STOCK_NUM}, KEY_ROWID + "=" + rowId, null,
                         null, null, null, null);
             if (sCursor != null) {
                 sCursor.moveToFirst();
@@ -149,11 +153,13 @@ public class StockDBAdapter {
          * @param body value to set note body to
          * @return true if the note was successfully updated, false otherwise
          */
-        public boolean updateStock(long rowId, String stockSymbol, String stockPrice) {
+        public boolean updateStock(long rowId, String stockSymbol, String stockPriceNew, String stockPriceOld, String stockNumbers) {
             ContentValues args = new ContentValues();
             args.put(STOCK_KEY, stockSymbol);
-            args.put(STOCK_PRICE, stockPrice);
-
+            args.put(STOCK_PRICE_NEW, stockPriceNew);
+            args.put(STOCK_PRICE_OLD, stockPriceOld);
+            args.put(STOCK_NUM, stockNumbers);
+            
             return sDb.update(DATABASE_TABLE, args, KEY_ROWID + "=" + rowId, null) > 0;
         }
 }

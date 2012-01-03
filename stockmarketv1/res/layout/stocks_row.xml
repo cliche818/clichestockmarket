@@ -17,4 +17,18 @@
     	android:id="@+id/stockText2" 
     	android:textSize="20px">
 	</TextView>
+	
+	<TextView
+        android:layout_width="wrap_content"
+    	android:layout_height="wrap_content"
+    	android:id="@+id/stockText3" 
+    	android:textSize="20px">
+	</TextView>
+	
+	    <TextView
+        android:layout_width="wrap_content"
+    	android:layout_height="wrap_content"
+    	android:id="@+id/stockText4" 
+    	android:textSize="20px">
+	</TextView>
 </LinearLayout>
