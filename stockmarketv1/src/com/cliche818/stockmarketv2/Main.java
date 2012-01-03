@@ -10,6 +10,7 @@ import java.net.URL;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -45,6 +46,7 @@ public class Main extends ListActivity {
 	TextView symbolOut;
 	TextView priceOut;
 	TextView changePercentageOut;
+	TextView bankAccountOut;
 	Button getQuote;
 	Button insertSimulation;
 	Button refreshSimulation;
@@ -56,6 +58,9 @@ public class Main extends ListActivity {
 	
 	//declare globalToast
 	private static Toast globalToast;
+	
+	//shared preference name
+	private static final String PREFS_NAME = "MyPrefsFile";
 	
 	//menu variables
 	private static final int HELP_ID = Menu.FIRST;
@@ -196,6 +201,8 @@ public class Main extends ListActivity {
 		symbolOut = (TextView) findViewById(R.id.stockSymbolOutput);
 		priceOut = (TextView) findViewById(R.id.stockPriceOutput);
 		changePercentageOut = (TextView) findViewById(R.id.stockChangePercentageOutput);
+		
+		bankAccountOut = (TextView) findViewById(R.id.bankAccountOutput);
 
 		getQuote = (Button) findViewById(R.id.get_quote_button);
 		
@@ -211,6 +218,12 @@ public class Main extends ListActivity {
 		fillData();
 		registerForContextMenu(getListView());
 		
+		//creating shared preferences (to save user money/cash account)
+		SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
+		String bankAccountString = userAccount.getString("bankAccount", "100000");
+		bankAccountOut.setText(bankAccountString);
+		
+		//Setting up Tabs
 		TabHost tabHost = (TabHost)findViewById(R.id.tabhost);
 		tabHost.setup();
 		

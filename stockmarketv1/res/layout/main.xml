@@ -80,6 +80,13 @@
     		android:layout_height="fill_parent"
     		android:padding="5dp" >
     		
+		    <TextView 
+    			android:text="Bank Account Information" 
+    			android:id="@+id/bankAccountOutput" 
+    			android:layout_width="fill_parent" 
+    			android:layout_height="wrap_content">
+    		</TextView>
+		    
     		<Button
     			android:text="Refresh"
     			android:id="@+id/refreshSimulation"
