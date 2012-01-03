@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TabHost xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/tabhost"
+	android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+    <TabWidget
+            android:id="@android:id/tabs"
+            android:layout_width="fill_parent"
+           	android:layout_height="wrap_content" />
+        <FrameLayout
+            android:id="@android:id/tabcontent"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:paddingTop="65px">
+
+		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+			android:id="@+id/stockQuote"
+    		android:orientation="vertical"
+    		android:layout_width="fill_parent"
+    		android:layout_height="wrap_content">
+
+			<LinearLayout android:id="@+id/rl1"
+				android:orientation="horizontal"
+    			android:layout_width="fill_parent"
+    			android:layout_height="wrap_content"
+    			android:padding="5px">
+		   		<EditText 
+		   			android:layout_width="100px" 
+		   			android:layout_height="40px" 
+		   			android:id="@+id/setSymbol"
+		   			android:hint="Symbol"
+		   			android:textSize="16px"
+		   			android:singleLine="True">
+		   		</EditText>
+		   
+		   		<Button 
+		   			android:text="Get Stock Price" 
+		   			android:id="@+id/get_quote_button" 
+		   			android:layout_width="wrap_content" 
+		   			android:layout_height="40px">
+		   		</Button>
+		   
+
+    		</LinearLayout>
+    		
+   			<Button 
+	   			android:text="Insert into simulation" 
+	   			android:id="@+id/insert_button" 
+	   			android:layout_width="fill_parent" 
+	   			android:layout_height="wrap_content">
+	   		</Button>
+    		
+   			<TextView 
+    			android:text="stocksymbolOutput" 
+    			android:id="@+id/stockSymbolOutput" 
+    			android:layout_width="wrap_content" 
+    			android:layout_height="wrap_content">
+    		</TextView>
+    
+    		<TextView 
+    			android:text="stockPriceOutput" 
+    			android:id="@+id/stockPriceOutput" 
+    			android:layout_width="wrap_content" 
+    			android:layout_height="wrap_content">
+    		</TextView>
+    
+    		<TextView 
+    			android:text="stockChangePercentageOutput" 
+    			android:id="@+id/stockChangePercentageOutput" 
+    			android:layout_width="wrap_content" 
+    			android:layout_height="wrap_content">
+    		</TextView>
+		</LinearLayout>
+		
+		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+			android:id="@+id/simulation"
+    		android:orientation="vertical"
+    		android:layout_width="fill_parent"
+    		android:layout_height="fill_parent"
+    		android:padding="5dp" >
+    		
+    		<Button
+    			android:text="Refresh"
+    			android:id="@+id/refreshSimulation"
+    			android:layout_width="fill_parent"
+    			android:layout_height="wrap_content">
+    		</Button>
+    		
+    		<ListView
+    			android:id="@android:id/list"
+    			android:layout_width="fill_parent"
+    			android:layout_height="wrap_content" >
+    			
+    		</ListView>
+    	</LinearLayout>
+    	
+	</FrameLayout>
+</TabHost>

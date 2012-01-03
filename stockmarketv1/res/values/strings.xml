@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello Stock Market v2</string>
+    <string name="app_name">stockmarketv2</string>
+    <string name="menu_insert">Help</string>
+    <string name="menu_insert2">About</string>
+    <string name="menu_delete">Delete Stock</string>
+</resources>
