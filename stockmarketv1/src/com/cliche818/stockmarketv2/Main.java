@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -76,6 +77,8 @@ public class Main extends ListActivity {
 	String stockQuote = "N/A";
 	String stockChangePercentage = "N/A";
 	
+	//class variable
+	String bankAccountString;
 	
 	/*
 	 * This sub class is to asynchronously refresh the simulation data
@@ -223,7 +226,7 @@ public class Main extends ListActivity {
 		
 		//creating shared preferences (to save user money/cash account)
 		SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
-		String bankAccountString = userAccount.getString("bankAccount", "100000");
+		bankAccountString = userAccount.getString("bankAccount", "100000.00");
 		bankAccountOut.setText(bankAccountString);
 		
 		//Setting up Tabs
@@ -306,8 +309,6 @@ public class Main extends ListActivity {
 			@Override
 			public void onClick(View v) {
 				String noOfStocksString = setNoOfStocks.getText().toString();
-				//useless line down below
-				//int noOfStocks = Integer.parseInt(noOfStocksString);
 				createStock(noOfStocksString);
 			}	
 		});
@@ -339,11 +340,29 @@ public class Main extends ListActivity {
         menu.add(0, DELETE_ID, 0, R.string.menu_delete);
     }
 
+    /*
+     * Option to delete/sell stock from simulation mode
+     */
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case DELETE_ID:
                 AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+                
+                //before deleting stock, it must first be "sold"
+                //operations to change the user's bankAccount information
+                Cursor cur = sDbHelper.fetchStock(info.id);
+                BigDecimal bankAccountBigDecimal = new BigDecimal (bankAccountString);
+    			BigDecimal stockQuoteBigDecimal = new BigDecimal (cur.getString(3));
+    			BigDecimal noOfStocksBigDecimal = new BigDecimal (cur.getString(4));
+    			stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noOfStocksBigDecimal);
+    			bankAccountBigDecimal = bankAccountBigDecimal.add(stockQuoteBigDecimal);
+    			SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
+    			SharedPreferences.Editor editor = userAccount.edit();
+    			editor.putString ("bankAccount", bankAccountBigDecimal.toString());
+    			bankAccountOut.setText(bankAccountBigDecimal.toString());
+                editor.commit();
+    			
                 sDbHelper.deleteStock(info.id);
                 fillData();
                 return true;
@@ -467,9 +486,18 @@ public class Main extends ListActivity {
 			globalToast.show();
 		}
 		else{
-			/*Toast yesInsert = Toast.makeText(Main.this,
-					"Successfully inserted the stock symbol!",
-					Toast.LENGTH_LONG);*/
+			//operation to change the user's bank account (buying)
+			BigDecimal bankAccountBigDecimal = new BigDecimal (bankAccountString);
+			BigDecimal stockQuoteBigDecimal = new BigDecimal (stockQuote);
+			BigDecimal noOfStocksBigDecimal = new BigDecimal (noOfStocksString);
+			stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noOfStocksBigDecimal);
+			bankAccountBigDecimal = bankAccountBigDecimal.subtract(stockQuoteBigDecimal);
+			SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
+			SharedPreferences.Editor editor = userAccount.edit();
+			editor.putString ("bankAccount", bankAccountBigDecimal.toString());
+			bankAccountOut.setText(bankAccountBigDecimal.toString());
+			editor.commit();
+			
 			globalToast.cancel();
 			globalToast.setText("Successfully inserted the stock symbol!");
 			globalToast.show();
