@@ -70,7 +70,9 @@ public class Main extends ListActivity {
 	private static final int DELETE_ID = Menu.FIRST + 3;
 	
 	//CONSTANTS
-	String NOTVALIDSTOCKPRICE = "0.00";
+	private static final String NOTVALIDSTOCKPRICE = "0.00";
+	private static final BigDecimal NO_MONEY = new BigDecimal ("0.00");
+	
 	
 	//class variables to make my life easy
 	String stockSymbol = "N/A";
@@ -288,6 +290,10 @@ public class Main extends ListActivity {
 					globalToast.cancel();
 					globalToast.setText("A stock symbol is required to continue");
 					globalToast.show();
+					
+					//re-enable getQuote button
+					getQuote.setText("Get Stock Quote");
+					getQuote.setEnabled(true);
 				}
 
 				else {
@@ -355,8 +361,13 @@ public class Main extends ListActivity {
                 BigDecimal bankAccountBigDecimal = new BigDecimal (bankAccountString);
     			BigDecimal stockQuoteBigDecimal = new BigDecimal (cur.getString(3));
     			BigDecimal noOfStocksBigDecimal = new BigDecimal (cur.getString(4));
+    			
     			stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noOfStocksBigDecimal);
     			bankAccountBigDecimal = bankAccountBigDecimal.add(stockQuoteBigDecimal);
+    			
+    			//forgot to set our "global" bank account string, bug fix
+    			bankAccountString = bankAccountBigDecimal.toString();
+    			
     			SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
     			SharedPreferences.Editor editor = userAccount.edit();
     			editor.putString ("bankAccount", bankAccountBigDecimal.toString());
@@ -476,34 +487,52 @@ public class Main extends ListActivity {
 	}
 	
 	private void createStock(String noOfStocksString){
-		long insertMsg = sDbHelper.createStock(stockSymbol, stockQuote, stockQuote, noOfStocksString);
-		if (insertMsg == -1){
-			/*Toast noInsert = Toast.makeText(Main.this,
-					"You had already added this stock symbol before!",
-					Toast.LENGTH_LONG);*/
+
+		//operation to change the user's bank account (buying)
+		BigDecimal bankAccountBigDecimal = new BigDecimal (bankAccountString);
+		BigDecimal stockQuoteBigDecimal = new BigDecimal (stockQuote);
+		BigDecimal noOfStocksBigDecimal = new BigDecimal (noOfStocksString);
+		
+		stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noOfStocksBigDecimal);
+		bankAccountBigDecimal = bankAccountBigDecimal.subtract(stockQuoteBigDecimal);
+		
+		//check if there the user has enough cash....don't want cash account to go below 0
+		if (bankAccountBigDecimal.compareTo(NO_MONEY) == -1){
 			globalToast.cancel();
-			globalToast.setText("You had already added this stock symbol before!");
+			globalToast.setText("You don't have enough money!");
 			globalToast.show();
 		}
+			
 		else{
-			//operation to change the user's bank account (buying)
-			BigDecimal bankAccountBigDecimal = new BigDecimal (bankAccountString);
-			BigDecimal stockQuoteBigDecimal = new BigDecimal (stockQuote);
-			BigDecimal noOfStocksBigDecimal = new BigDecimal (noOfStocksString);
-			stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noOfStocksBigDecimal);
-			bankAccountBigDecimal = bankAccountBigDecimal.subtract(stockQuoteBigDecimal);
+			
+			//forgot to set our "global" bank account string, bug fix
+			bankAccountString = bankAccountBigDecimal.toString();
+			
 			SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
 			SharedPreferences.Editor editor = userAccount.edit();
 			editor.putString ("bankAccount", bankAccountBigDecimal.toString());
 			bankAccountOut.setText(bankAccountBigDecimal.toString());
 			editor.commit();
 			
+			// add the stock to database
+			long insertMsg = sDbHelper.createStock(stockSymbol, stockQuote, stockQuote, noOfStocksString);
+			if (insertMsg == -1){
+				/*Toast noInsert = Toast.makeText(Main.this,
+						"You had already added this stock symbol before!",
+						Toast.LENGTH_LONG);*/
+				globalToast.cancel();
+				globalToast.setText("You had already added this stock symbol before!");
+				globalToast.show();
+			}
+			
 			globalToast.cancel();
 			globalToast.setText("Successfully inserted the stock symbol!");
 			globalToast.show();
-		}
 			
-		fillData();
+			fillData();
+		}
+		
+		
 	}
 	
 	private void fillData(){
