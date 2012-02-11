@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/portfolio_item"
+  		android:orientation="vertical"
+  		android:layout_width="fill_parent"
+  		android:layout_height="fill_parent"
+  		android:padding="5dp" >
+  		
+  		<TextView 
+  		    android:id="@+id/pfliTicker"
+  		    android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+  		<TextView 
+  		    android:id="@+id/pfliName"
+  		    android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+  		<Button
+  		    android:text="Remove" 
+  		    android:id="@+id/pfliDeleteBtn"
+  		    android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:onClick="portfolioDelete" />
+  		<Button
+  		    android:text="Buy" 
+  		    android:id="@+id/pfliGameBuyBtn"
+  		    android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:visibility="gone" />
+  		
+ </LinearLayout>
