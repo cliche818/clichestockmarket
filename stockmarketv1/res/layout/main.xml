@@ -12,8 +12,9 @@
             android:id="@android:id/tabcontent"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:paddingTop="65px">
+            android:paddingTop="65dp">
 
+        <!-- STOCK QUOTE  -->
 		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 			android:id="@+id/stockQuote"
     		android:orientation="vertical"
@@ -23,14 +24,14 @@
 			<LinearLayout android:id="@+id/rl1"
 				android:orientation="horizontal"
     			android:layout_width="fill_parent"
-    			android:layout_height="wrap_content"
-    			android:padding="5px">
+    			android:layout_height="wrap_content">
 		   		<EditText 
-		   			android:layout_width="100px" 
-		   			android:layout_height="40px" 
+		   			android:layout_width="100dp" 
+		   			android:layout_height="wrap_content" 
 		   			android:id="@+id/setSymbol"
 		   			android:hint="Symbol"
-		   			android:textSize="16px"
+		   			android:textSize="16dp"
+		   			android:imeOptions="actionDone"
 		   			android:singleLine="True">
 		   		</EditText>
 		   
@@ -38,20 +39,21 @@
 		   			android:text="Get Stock Price" 
 		   			android:id="@+id/get_quote_button" 
 		   			android:layout_width="wrap_content" 
-		   			android:layout_height="40px">
+		   			android:layout_height="match_parent">
 		   		</Button>
 		   
 
     		</LinearLayout>
     		
 			<EditText 
-		   			android:layout_width="200px" 
-		   			android:layout_height="40px" 
+		   			android:layout_width="200dp" 
+		   			android:layout_height="wrap_content" 
 		   			android:id="@+id/setNoOfStocks"
 		   			android:hint="Number of Stocks"
-		   			android:textSize="16px"
+		   			android:textSize="16dp"
 		   			android:digits="0123456789"
 		   			android:inputType="number"
+		   			android:imeOptions="actionDone"
 		   			android:singleLine="True">
 		   	</EditText>    
 			    
@@ -91,6 +93,7 @@
     			android:layout_height="wrap_content">
     		</TextView>
 		</LinearLayout>
+		<!-- END OF STOCK QUOTE  -->
 				
 		<!-- PORTFOLIO  -->
 		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -109,6 +112,7 @@
 	   	</LinearLayout>
 		<!-- END OF PORTFOLIO -->
 		
+		<!--  SIMULATION  -->
 		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 			android:id="@+id/simulation"
     		android:orientation="vertical"
@@ -122,6 +126,15 @@
     			android:layout_width="fill_parent" 
     			android:layout_height="wrap_content">
     		</TextView>
+		    
+
+		    <TextView 
+		        android:text="Updated on: "
+    			android:id="@+id/updateOutput" 
+    			android:layout_width="wrap_content" 
+    			android:layout_height="wrap_content">
+    		</TextView>
+    			
 		    
     		<Button
     			android:text="Refresh"
@@ -137,6 +150,7 @@
     			
     		</ListView>
     	</LinearLayout>
+    	<!-- END OF SIMULATION  -->
     	
 	</FrameLayout>
 </TabHost>

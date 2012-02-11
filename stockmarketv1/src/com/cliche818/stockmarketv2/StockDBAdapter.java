@@ -25,7 +25,7 @@ public class StockDBAdapter {
 	   
     	private static final String DATABASE_CREATE =
 		        "create table stocks (_id integer primary key autoincrement, "
-		        + "stockSymbol text unique not null, stockPriceNew text not null, stockPriceOld text no null, stocksNumber);";
+		        + "stockSymbol text not null, stockPriceNew text not null, stockPriceOld text no null, stocksNumber);";
 	   
     	private final Context sCtx;
     	

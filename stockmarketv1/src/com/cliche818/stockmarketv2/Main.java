@@ -4,10 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 
 import android.app.Dialog;
@@ -56,6 +57,7 @@ public class Main extends ListActivity {
 	TextView priceOut;
 	TextView changePercentageOut;
 	TextView bankAccountOut;
+	TextView updateOut;
 	Button getQuote;
 	Button insertSimulation;
 	Button refreshSimulation;
@@ -80,7 +82,7 @@ public class Main extends ListActivity {
 	//CONSTANTS
 	private static final String NOTVALIDSTOCKPRICE = "0.00";
 	private static final BigDecimal NO_MONEY = new BigDecimal ("0.00");
-	private static final int DECIMALPLACES = 2;
+	private static final SimpleDateFormat dateFormat = new SimpleDateFormat ("hh:mm a 'on' yyyy-MM-dd");
 	
 	// Database
 	SQLiteDatabase db;
@@ -114,6 +116,7 @@ public class Main extends ListActivity {
 			String updatedRawData = "";
 			cur.moveToFirst();
 			
+			//update every single stock in my table
 			while (cur.isAfterLast() == false){
 				stockToUpdate = cur.getString(1);
 				updatedRawData = getStockInfo(stockToUpdate);
@@ -131,6 +134,8 @@ public class Main extends ListActivity {
 			fillData();
 			refreshSimulation.setText("Refresh");
 			refreshSimulation.setEnabled(true);
+			//set the time for when it was updated
+			updateOut.setText("Updated at: " + dateFormat.format(new Date()) );
 		}
 	}
 	
@@ -246,6 +251,7 @@ public class Main extends ListActivity {
 		changePercentageOut = (TextView) findViewById(R.id.stockChangePercentageOutput);
 		
 		bankAccountOut = (TextView) findViewById(R.id.bankAccountOutput);
+		updateOut = (TextView) findViewById (R.id.updateOutput);
 
 		getQuote = (Button) findViewById(R.id.get_quote_button);
 		saveToPortfolio = (Button) findViewById(R.id.save_to_portfolio_button) ;
@@ -270,19 +276,19 @@ public class Main extends ListActivity {
 		bankAccountOut.setText(currencyFormat(bankAccountBigDecimal));
 		
 		//Setting up Tabs
-		TabHost tabHost = (TabHost)findViewById(R.id.tabhost);
+		final TabHost tabHost = (TabHost)findViewById(R.id.tabhost);
 		tabHost.setup();
 		
 		//Setting up Get Quote Module
 		TabHost.TabSpec stockQuoteScreen = tabHost.newTabSpec("StockQuoteTab");
 		stockQuoteScreen.setContent(R.id.stockQuote);
-		stockQuoteScreen.setIndicator("GetStockQuote", getResources().getDrawable(R.drawable.stockquote_grey));
+		stockQuoteScreen.setIndicator("Stock Quote", getResources().getDrawable(R.drawable.stockquote_grey));
 		tabHost.addTab(stockQuoteScreen);
 		
 		//Setting up Portfolio
 		TabHost.TabSpec portfolioScreen = tabHost.newTabSpec("Portfolio");
 		portfolioScreen.setContent(R.id.portfolio);
-		portfolioScreen.setIndicator("GetStockQuote", getResources().getDrawable(R.drawable.stockquote_grey));
+		portfolioScreen.setIndicator("Portfolio", getResources().getDrawable(R.drawable.stockquote_grey));
 		tabHost.addTab(portfolioScreen);
 		
 		//Setting up Simulation Module
@@ -314,9 +320,8 @@ public class Main extends ListActivity {
 
 			@Override
 			public void onClick(View v) {
-				// hides keyboard
-				InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-				imm.hideSoftInputFromWindow(setSymbol.getWindowToken(), 0);
+				
+				hideKeyboard();
 				
 				//disable the getQuoteButton
 				getQuote.setText("Getting Stock Quote");
@@ -358,8 +363,20 @@ public class Main extends ListActivity {
 
 			@Override
 			public void onClick(View v) {
+				hideKeyboard();
+				
 				String noOfStocksString = setNoOfStocks.getText().toString();
-				createStock(noOfStocksString);
+				
+				//check that a number is indeed entered
+				if (noOfStocksString.length() == 0) {
+					globalToast.cancel();
+					globalToast.setText("A number is required to continue");
+					globalToast.show();
+				}	
+				else{
+					createStock(noOfStocksString);
+					tabHost.setCurrentTab(2);
+				}
 			}	
 		});
 		
@@ -435,7 +452,7 @@ public class Main extends ListActivity {
     }
 
     /*
-     * Option to delete/sell stock from simulation mode
+     * Option to delete/sell ALL stock from simulation mode
      */
     @Override
     public boolean onContextItemSelected(MenuItem item) {
@@ -452,9 +469,7 @@ public class Main extends ListActivity {
     			stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noOfStocksBigDecimal);
     			bankAccountBigDecimal = bankAccountBigDecimal.add(stockQuoteBigDecimal);
     			
-    			//forgot to set our "global" bank account string, bug fix
-    			
-    			
+    			//forgot to set our "global/stored" bank account string, bug fix
     			SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
     			SharedPreferences.Editor editor = userAccount.edit();
     			editor.putString ("bankAccount", bankAccountBigDecimal.toString());
@@ -636,11 +651,21 @@ public class Main extends ListActivity {
         this.setListAdapter(stocks);
 	}
 	
+	
+	/*
+	 * Changes the format of BigDecimal to a 2 decimal String form (for outputting in text box)
+	 */
 	public String currencyFormat(BigDecimal n) {
 	    return NumberFormat.getCurrencyInstance(Locale.CANADA).format(n);
 	}
 
-
+	/*
+	 * hides the keyboard (used after entering something in the editbox)
+	 */
+	public void hideKeyboard () {
+		InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+		imm.hideSoftInputFromWindow(setSymbol.getWindowToken(), 0);
+	}
 	
 	// PORTFOLIO FUNCTIONS
 	// Checks if the given ticker already exists in the database (true for yes false for no)
