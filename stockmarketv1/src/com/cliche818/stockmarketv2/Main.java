@@ -53,6 +53,7 @@ public class Main extends ListActivity {
 
 	// output variables
 	// these symbols allow any methods in this class to use them
+	TextView companyNameOut;
 	TextView symbolOut;
 	TextView priceOut;
 	TextView changePercentageOut;
@@ -97,6 +98,7 @@ public class Main extends ListActivity {
 	String lastTicker ;
 	
 	//class variables to make my life easy
+	String stockCompanyName = "N/A";
 	String stockSymbol = "N/A";
 	String stockQuote = "N/A";
 	String stockChangePercentage = "N/A";
@@ -165,24 +167,27 @@ public class Main extends ListActivity {
 			stockSymbol = tokens[0];
 			stockQuote = tokens[1];
 			stockChangePercentage = tokens[2];
+			stockCompanyName = tokens[3];
 
-			// parse the individual tokens, taking out ""
-			String fstockSymbol = stockSymbol.substring(1,stockSymbol.length() - 1);
+			// parse the individual tokens, taking out "" and .to for stock symbol
+			String fstockSymbol = stockSymbol.substring(1,stockSymbol.length() - 4);
 			String fstockChangePercentage = stockChangePercentage.substring(1,stockChangePercentage.length() - 3);
+			String fstockCompanyName = stockCompanyName.substring(1, stockCompanyName.length() - 1);
+			
 			// checking if a correct stock symbol was entering
 			// looking to see if stock price is 0.00, which is not possible
 			if ( stockQuote.compareTo(NOTVALIDSTOCKPRICE) == 0){
 				
-				/*Toast noSymbol = Toast.makeText(Main.this,
-						"A invalid stock symbol was entered",
-						Toast.LENGTH_LONG);*/
 				globalToast.cancel();
 				globalToast.setText("A invalid stock symbol was entered");
 				globalToast.show();
 				
-				stockQuote = "N/A";
-				fstockChangePercentage = "N/A";
-				symbolOut.setText(fstockSymbol + " is not a valid stock symbol");
+				stockQuote = "Stock Quote: N/A";
+				fstockChangePercentage = "Percent Change: N/A";
+				stockCompanyName = "Company Name: N/A";
+				
+				companyNameOut.setText (stockCompanyName);
+				symbolOut.setText(fstockSymbol + " is not a valid stock symbol in Toronto Stock Exchange (TSX)");
 				priceOut.setText(stockQuote);
 				changePercentageOut.setText(fstockChangePercentage);
 				
@@ -190,9 +195,10 @@ public class Main extends ListActivity {
 			//correct stock quote was entered
 			else {
 				
-				symbolOut.setText(fstockSymbol);
-				priceOut.setText(stockQuote);
-				changePercentageOut.setText(fstockChangePercentage);
+				companyNameOut.setText ("Company Name: " + fstockCompanyName);
+				symbolOut.setText("Stock Symbol: " + fstockSymbol);
+				priceOut.setText("Stock Quote: " + stockQuote);
+				changePercentageOut.setText("Percent Change: " + fstockChangePercentage + "%");
 				
 			}
 				
@@ -246,6 +252,7 @@ public class Main extends ListActivity {
 		setNoOfStocks = (EditText) findViewById(R.id.setNoOfStocks);
 		setNoOfStocks.setEnabled(false);
 		
+		companyNameOut = (TextView) findViewById(R.id.companyNameOutput);
 		symbolOut = (TextView) findViewById(R.id.stockSymbolOutput);
 		priceOut = (TextView) findViewById(R.id.stockPriceOutput);
 		changePercentageOut = (TextView) findViewById(R.id.stockChangePercentageOutput);
@@ -506,7 +513,7 @@ public class Main extends ListActivity {
 			
 			//setup text (about message)
 			TextView aboutText = (TextView) aboutDialog.findViewById(R.id.aboutWindow);
-			aboutText.setText("Written by Jeff.\nBecause this box finally works.\n");
+			aboutText.setText("Written by Fangbo and Jeff.\n\nShoutout to StackOverflow and Frank\n");
 			
 			//do the exit button
 			Button aboutButton = (Button) aboutDialog.findViewById(R.id.aboutButton);
@@ -560,12 +567,19 @@ public class Main extends ListActivity {
 		URL url;
 		String stockTxt = "bad data or something bad happened";
 		try {
-				// getting info from Yahoo Finance API [meat of the
-				// program]
+				// getting info from Yahoo Finance API [meat of the program]
 				url = new URL(
 						"http://download.finance.yahoo.com/d/quotes.csv?s="
-								+ symbolInput + "&f=sl1p2");
-
+								+ symbolInput + ".to" +"&f=sl1p2n");
+				
+				//!!!!!!added .to TSX stocks only!!!!!!!!!!!//
+				
+				/*
+				 * s = stock symbol
+				 * l1 = last trade (price only)
+				 * p2 = change in percent
+				 * n = name of company
+				 */
 
 				InputStream stream = url.openStream();
 				

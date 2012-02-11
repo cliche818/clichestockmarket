@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<TabHost xmlns:android="http://schemas.android.com/apk/res/android"
+<TabHost 
+    xmlns:android="http://schemas.android.com/apk/res/android"
 	android:id="@+id/tabhost"
 	android:layout_width="fill_parent"
     android:layout_height="fill_parent">
@@ -15,22 +16,24 @@
             android:paddingTop="65dp">
 
         <!-- STOCK QUOTE  -->
-		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		<LinearLayout 
+		    xmlns:android="http://schemas.android.com/apk/res/android"
 			android:id="@+id/stockQuote"
     		android:orientation="vertical"
     		android:layout_width="fill_parent"
     		android:layout_height="wrap_content">
 
-			<LinearLayout android:id="@+id/rl1"
+		    
+			<LinearLayout 
+			    android:id="@+id/rl1"
 				android:orientation="horizontal"
     			android:layout_width="fill_parent"
     			android:layout_height="wrap_content">
 		   		<EditText 
-		   			android:layout_width="100dp" 
+		   			android:layout_width="wrap_content" 
 		   			android:layout_height="wrap_content" 
 		   			android:id="@+id/setSymbol"
-		   			android:hint="Symbol"
-		   			android:textSize="16dp"
+		   			android:hint="Enter Stock Symbol"
 		   			android:imeOptions="actionDone"
 		   			android:singleLine="True">
 		   		</EditText>
@@ -45,24 +48,57 @@
 
     		</LinearLayout>
     		
-			<EditText 
-		   			android:layout_width="200dp" 
-		   			android:layout_height="wrap_content" 
-		   			android:id="@+id/setNoOfStocks"
-		   			android:hint="Number of Stocks"
-		   			android:textSize="16dp"
-		   			android:digits="0123456789"
-		   			android:inputType="number"
-		   			android:imeOptions="actionDone"
-		   			android:singleLine="True">
-		   	</EditText>    
+			<TextView 
+    			android:text="Company Name: " 
+    			android:id="@+id/companyNameOutput" 
+    			android:layout_width="fill_parent" 
+    			android:layout_height="wrap_content">
+    		</TextView>
+			
+			<TextView 
+    			android:text="Stock Symbol: " 
+    			android:id="@+id/stockSymbolOutput" 
+    			android:layout_width="wrap_content" 
+    			android:layout_height="wrap_content">
+    		</TextView>
+    
+    		<TextView 
+    			android:text="Stock Quote: " 
+    			android:id="@+id/stockPriceOutput" 
+    			android:layout_width="wrap_content" 
+    			android:layout_height="wrap_content">
+    		</TextView>
+    
+    		<TextView 
+    			android:text="Percent Change: " 
+    			android:id="@+id/stockChangePercentageOutput" 
+    			android:layout_width="wrap_content" 
+    			android:layout_height="wrap_content">
+    		</TextView>
+			
+    		<LinearLayout 
+			    android:id="@+id/rl2"
+				android:orientation="horizontal"
+    			android:layout_width="fill_parent"
+    			android:layout_height="wrap_content">
+				<EditText 
+		   				android:layout_width="wrap_content" 
+		   				android:layout_height="wrap_content" 
+		   				android:id="@+id/setNoOfStocks"
+		   				android:hint="Enter Number of Stocks"
+		   				android:digits="0123456789"
+		   				android:inputType="number"
+		   				android:imeOptions="actionDone"
+		   				android:singleLine="True">
+		   		</EditText>    
 			    
-   			<Button 
-	   			android:text="Insert into simulation" 
-	   			android:id="@+id/insert_button" 
-	   			android:layout_width="fill_parent" 
-	   			android:layout_height="wrap_content">
-	   		</Button>
+   				<Button 
+	   				android:text="Buy" 
+	   				android:id="@+id/insert_button" 
+	   				android:layout_width="wrap_content" 
+	   				android:layout_height="match_parent">
+	   			</Button>
+	   		</LinearLayout>
 	   		
 	   		<Button
 	   		    android:text="Save to Portfolio"
@@ -72,26 +108,7 @@
 	   			android:visibility="gone">
 	   		</Button>
     		
-   			<TextView 
-    			android:text="stocksymbolOutput" 
-    			android:id="@+id/stockSymbolOutput" 
-    			android:layout_width="wrap_content" 
-    			android:layout_height="wrap_content">
-    		</TextView>
-    
-    		<TextView 
-    			android:text="stockPriceOutput" 
-    			android:id="@+id/stockPriceOutput" 
-    			android:layout_width="wrap_content" 
-    			android:layout_height="wrap_content">
-    		</TextView>
-    
-    		<TextView 
-    			android:text="stockChangePercentageOutput" 
-    			android:id="@+id/stockChangePercentageOutput" 
-    			android:layout_width="wrap_content" 
-    			android:layout_height="wrap_content">
-    		</TextView>
+   			
 		</LinearLayout>
 		<!-- END OF STOCK QUOTE  -->
 				
