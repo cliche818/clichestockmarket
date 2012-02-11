@@ -1,10 +1,10 @@
 package com.cliche818.stockmarketv2;
-//testing also testing from fangbo
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -72,6 +72,7 @@ public class Main extends ListActivity {
 	//CONSTANTS
 	private static final String NOTVALIDSTOCKPRICE = "0.00";
 	private static final BigDecimal NO_MONEY = new BigDecimal ("0.00");
+	private static final int DECIMALPLACES = 2;
 	
 	
 	//class variables to make my life easy
@@ -366,7 +367,9 @@ public class Main extends ListActivity {
     			bankAccountBigDecimal = bankAccountBigDecimal.add(stockQuoteBigDecimal);
     			
     			//forgot to set our "global" bank account string, bug fix
+    			bankAccountBigDecimal.setScale(DECIMALPLACES, RoundingMode.HALF_UP);
     			bankAccountString = bankAccountBigDecimal.toString();
+    			
     			
     			SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
     			SharedPreferences.Editor editor = userAccount.edit();
@@ -506,6 +509,7 @@ public class Main extends ListActivity {
 		else{
 			
 			//forgot to set our "global" bank account string, bug fix
+			bankAccountBigDecimal.setScale(DECIMALPLACES, RoundingMode.HALF_UP);
 			bankAccountString = bankAccountBigDecimal.toString();
 			
 			SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
