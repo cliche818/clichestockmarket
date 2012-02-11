@@ -10,9 +10,11 @@ import java.net.URL;
 
 import android.app.Dialog;
 import android.app.ListActivity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
@@ -29,6 +31,9 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TabHost;
 import android.widget.TextView;
@@ -54,6 +59,7 @@ public class Main extends ListActivity {
 	Button refreshSimulation;
 	MediaPlayer mpGood;
 	MediaPlayer mpBad;
+	Button saveToPortfolio ;
 	
 	//database variable
 	private StockDBAdapter sDbHelper;
@@ -74,6 +80,17 @@ public class Main extends ListActivity {
 	private static final BigDecimal NO_MONEY = new BigDecimal ("0.00");
 	private static final int DECIMALPLACES = 2;
 	
+	// Database
+	SQLiteDatabase db;
+	Cursor dbCursor;
+	
+	// Lists
+	ListView portfolio;
+	ListView gameAsset;
+	ListAdapter adapter;
+	
+	// Stored variables
+	String lastTicker ;
 	
 	//class variables to make my life easy
 	String stockSymbol = "N/A";
@@ -114,7 +131,6 @@ public class Main extends ListActivity {
 			refreshSimulation.setEnabled(true);
 		}
 	}
-	
 	
 	/*
 	 * This sub class is to asynchronously get stock data for GetStock Module
@@ -181,6 +197,19 @@ public class Main extends ListActivity {
 			else
 				mpGood.start();
 
+			// Keeping ticker value
+			lastTicker = setSymbol.getText().toString() ;
+			
+			// Show save to portfolio button
+			if (existInDB(lastTicker)) {
+				saveToPortfolio.setText("Already in portfolio") ;
+				saveToPortfolio.setClickable(false) ;
+			} else {
+				saveToPortfolio.setText("Save to Portfolio") ;
+				saveToPortfolio.setClickable(true) ;
+			}
+			saveToPortfolio.setVisibility(View.VISIBLE) ;
+			
 			// erases edit text view after getting quote
 			setSymbol.setText("");
 			
@@ -192,6 +221,9 @@ public class Main extends ListActivity {
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		// Intilize database connection variable
+		db = (new SQLiteExpandedHelper(this)).getWritableDatabase();
+		
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 
@@ -214,6 +246,7 @@ public class Main extends ListActivity {
 		bankAccountOut = (TextView) findViewById(R.id.bankAccountOutput);
 
 		getQuote = (Button) findViewById(R.id.get_quote_button);
+		saveToPortfolio = (Button) findViewById(R.id.save_to_portfolio_button) ;
 		
 		insertSimulation = (Button) findViewById(R.id.insert_button);
 		insertSimulation.setEnabled(false);
@@ -242,11 +275,17 @@ public class Main extends ListActivity {
 		stockQuoteScreen.setIndicator("GetStockQuote", getResources().getDrawable(R.drawable.stockquote_grey));
 		tabHost.addTab(stockQuoteScreen);
 		
-		//Setting up Simulation Module
-		TabHost.TabSpec portfolioScreen = tabHost.newTabSpec("simulationTab");
-		portfolioScreen.setContent(R.id.simulation);
-		portfolioScreen.setIndicator("Simulation", getResources().getDrawable(R.drawable.stockquote_grey));
+		//Setting up Portfolio
+		TabHost.TabSpec portfolioScreen = tabHost.newTabSpec("Portfolio");
+		portfolioScreen.setContent(R.id.portfolio);
+		portfolioScreen.setIndicator("GetStockQuote", getResources().getDrawable(R.drawable.stockquote_grey));
 		tabHost.addTab(portfolioScreen);
+		
+		//Setting up Simulation Module
+		TabHost.TabSpec simulationScreen = tabHost.newTabSpec("simulationTab");
+		simulationScreen.setContent(R.id.simulation);
+		simulationScreen.setIndicator("Simulation", getResources().getDrawable(R.drawable.stockquote_grey));
+		tabHost.addTab(simulationScreen);
 		
 		tabHost.setCurrentTab(0);
 		
@@ -338,6 +377,50 @@ public class Main extends ListActivity {
 		
 		
 		//-----------------------------------------End of Core of Simulation Module in GetStockQuote Tab----------------------------------------------------
+		
+		
+		// ------------------------------------------- PORTFOLIO STUFF -----------------------------------------------//
+		saveToPortfolio.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				// Report if no ticker inserted
+				if (lastTicker == null || lastTicker == "") {
+					Toast dbError = Toast.makeText(Main.this,
+							"There was no stock ticker to add.",
+							Toast.LENGTH_LONG);
+					dbError.show();
+					return ;
+				// Report if already exist
+				} else if (existInDB(lastTicker)) {
+					Toast dbError = Toast.makeText(Main.this,
+							"This company is already in your portfolio!",
+							Toast.LENGTH_LONG);
+					dbError.show();
+					return ;
+				} else {
+					// Report if error
+					if (!insertInDB(lastTicker)) {
+						Toast dbError = Toast.makeText(Main.this,
+								"I can't seem to add this to the portfolio, please restart the application and try again.",
+								Toast.LENGTH_LONG);
+						dbError.show();
+						return ;
+					}
+					// User feedback
+					saveToPortfolio.setText("Done") ;
+					saveToPortfolio.setClickable(false) ;
+				}
+			}
+		}) ;
+
+		// Get portfolio variables
+		portfolio = (ListView) findViewById(R.id.pfList);
+		
+		// Prep the portfolio lists
+		dbCursor = db.rawQuery("SELECT * FROM portfolio WHERE 1=1", null);
+		adapter = new SimpleCursorAdapter(this,	R.layout.portfolio_item, dbCursor, new String[] {"Ticker"},	new int[] {R.id.pfliTicker});
+		portfolio.setAdapter(adapter);
+		// ------------------------------------------- END PORTFOLIO STUFF -----------------------------------------------//
 	}
 	
     @Override
@@ -557,4 +640,66 @@ public class Main extends ListActivity {
 	}
 
 
+	
+	// PORTFOLIO FUNCTIONS
+	// Checks if the given ticker already exists in the database (true for yes false for no)
+	protected boolean existInDB(String ticker){
+		if (ticker != null && ticker != "") {
+			dbCursor = db.rawQuery("SELECT _id FROM portfolio WHERE Ticker = \"" + ticker + "\"", null) ;
+			return (dbCursor.getCount()>0) ;
+		} else {
+			Toast dbError = Toast.makeText(Main.this,
+					"There was no stock ticker to search.",
+					Toast.LENGTH_LONG);
+			dbError.show();
+			return false ;
+		}
+	}
+	
+	// Adds a ticker to the portfolio db (true for okay false for error)
+	protected boolean insertInDB(String ticker) {
+		if (ticker != null && ticker != "") {
+			ContentValues values = new ContentValues();
+	        values.put("Ticker", ticker);
+			if (-1 != db.insert("portfolio", "_id", values)) {
+				// update the portfolio page upon success
+				dbCursor = db.rawQuery("SELECT * FROM portfolio WHERE 1=1", null);
+				adapter = new SimpleCursorAdapter(this,	R.layout.portfolio_item, dbCursor, new String[] {"Ticker"},	new int[] {R.id.pfliTicker});
+				portfolio.setAdapter(adapter);
+				return true ;
+			} else {
+				return false ;
+			}
+		} else {
+			Toast dbError = Toast.makeText(Main.this,
+					"There was no stock ticker to add.",
+					Toast.LENGTH_LONG);
+			dbError.show();
+			return false ;
+		}
+	}
+	
+	// Delete button handler for portfolio view
+	public void portfolioDelete(View v) {
+		// get row layout object
+		LinearLayout row = (LinearLayout)v.getParent();
+		// get label from layout
+        TextView ticker = (TextView)row.getChildAt(0);
+        // da query
+        if (db.delete("portfolio", "Ticker = \"" + ticker.getText().toString() + "\"", null) > 0) {
+			Toast dbInform = Toast.makeText(Main.this,
+					ticker.getText().toString() + " removed.",
+					Toast.LENGTH_LONG);
+			dbInform.show();
+        } else {
+			Toast dbError = Toast.makeText(Main.this,
+					"Unable to delete " + ticker.getText().toString() + ".",
+					Toast.LENGTH_LONG);
+			dbError.show();
+        }
+        // reset layout so it actually shows
+		dbCursor = db.rawQuery("SELECT * FROM portfolio WHERE 1=1", null);
+		adapter = new SimpleCursorAdapter(this,	R.layout.portfolio_item, dbCursor, new String[] {"Ticker"},	new int[] {R.id.pfliTicker});
+		portfolio.setAdapter(adapter);
+	}
 }

@@ -61,6 +61,14 @@
 	   			android:layout_width="fill_parent" 
 	   			android:layout_height="wrap_content">
 	   		</Button>
+	   		
+	   		<Button
+	   		    android:text="Save to Portfolio"
+	   		    android:id="@+id/save_to_portfolio_button"
+	   			android:layout_width="wrap_content" 
+	   			android:layout_height="wrap_content"
+	   			android:visibility="gone">
+	   		</Button>
     		
    			<TextView 
     			android:text="stocksymbolOutput" 
@@ -83,6 +91,23 @@
     			android:layout_height="wrap_content">
     		</TextView>
 		</LinearLayout>
+				
+		<!-- PORTFOLIO  -->
+		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+			android:id="@+id/portfolio"
+	   		android:orientation="vertical"
+	   		android:layout_width="fill_parent"
+	   		android:layout_height="fill_parent"
+	   		android:padding="5dp" >
+	   		
+	   		<ListView 
+	   		    android:id="@+id/pfList"
+	   		    android:layout_width="fill_parent"
+	               android:layout_height="fill_parent">
+	        </ListView>
+	   		
+	   	</LinearLayout>
+		<!-- END OF PORTFOLIO -->
 		
 		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 			android:id="@+id/simulation"
