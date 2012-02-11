@@ -7,6 +7,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 import android.app.Dialog;
 import android.app.ListActivity;
@@ -98,7 +100,7 @@ public class Main extends ListActivity {
 	String stockChangePercentage = "N/A";
 	
 	//class variable
-	String bankAccountString;
+	BigDecimal bankAccountBigDecimal;
 	
 	/*
 	 * This sub class is to asynchronously refresh the simulation data
@@ -262,8 +264,10 @@ public class Main extends ListActivity {
 		
 		//creating shared preferences (to save user money/cash account)
 		SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
-		bankAccountString = userAccount.getString("bankAccount", "100000.00");
-		bankAccountOut.setText(bankAccountString);
+		String bankAccountString = userAccount.getString("bankAccount", "100000.00");
+		bankAccountBigDecimal = new BigDecimal(bankAccountString);
+		
+		bankAccountOut.setText(currencyFormat(bankAccountBigDecimal));
 		
 		//Setting up Tabs
 		TabHost tabHost = (TabHost)findViewById(R.id.tabhost);
@@ -442,7 +446,6 @@ public class Main extends ListActivity {
                 //before deleting stock, it must first be "sold"
                 //operations to change the user's bankAccount information
                 Cursor cur = sDbHelper.fetchStock(info.id);
-                BigDecimal bankAccountBigDecimal = new BigDecimal (bankAccountString);
     			BigDecimal stockQuoteBigDecimal = new BigDecimal (cur.getString(3));
     			BigDecimal noOfStocksBigDecimal = new BigDecimal (cur.getString(4));
     			
@@ -450,14 +453,12 @@ public class Main extends ListActivity {
     			bankAccountBigDecimal = bankAccountBigDecimal.add(stockQuoteBigDecimal);
     			
     			//forgot to set our "global" bank account string, bug fix
-    			bankAccountBigDecimal.setScale(DECIMALPLACES, RoundingMode.HALF_UP);
-    			bankAccountString = bankAccountBigDecimal.toString();
     			
     			
     			SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
     			SharedPreferences.Editor editor = userAccount.edit();
     			editor.putString ("bankAccount", bankAccountBigDecimal.toString());
-    			bankAccountOut.setText(bankAccountBigDecimal.toString());
+    			bankAccountOut.setText(currencyFormat(bankAccountBigDecimal));
                 editor.commit();
     			
                 sDbHelper.deleteStock(info.id);
@@ -575,7 +576,6 @@ public class Main extends ListActivity {
 	private void createStock(String noOfStocksString){
 
 		//operation to change the user's bank account (buying)
-		BigDecimal bankAccountBigDecimal = new BigDecimal (bankAccountString);
 		BigDecimal stockQuoteBigDecimal = new BigDecimal (stockQuote);
 		BigDecimal noOfStocksBigDecimal = new BigDecimal (noOfStocksString);
 		
@@ -592,13 +592,10 @@ public class Main extends ListActivity {
 		else{
 			
 			//forgot to set our "global" bank account string, bug fix
-			bankAccountBigDecimal.setScale(DECIMALPLACES, RoundingMode.HALF_UP);
-			bankAccountString = bankAccountBigDecimal.toString();
-			
 			SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
 			SharedPreferences.Editor editor = userAccount.edit();
 			editor.putString ("bankAccount", bankAccountBigDecimal.toString());
-			bankAccountOut.setText(bankAccountBigDecimal.toString());
+			bankAccountOut.setText(currencyFormat(bankAccountBigDecimal));
 			editor.commit();
 			
 			// add the stock to database
@@ -637,6 +634,10 @@ public class Main extends ListActivity {
         //ListView simulationList = (ListView) findViewById(R.id.simulationListView);
         //simulationList.setAdapter (stocks);
         this.setListAdapter(stocks);
+	}
+	
+	public String currencyFormat(BigDecimal n) {
+	    return NumberFormat.getCurrencyInstance(Locale.CANADA).format(n);
 	}
 
 
@@ -702,4 +703,6 @@ public class Main extends ListActivity {
 		adapter = new SimpleCursorAdapter(this,	R.layout.portfolio_item, dbCursor, new String[] {"Ticker"},	new int[] {R.id.pfliTicker});
 		portfolio.setAdapter(adapter);
 	}
+	
+	
 }
