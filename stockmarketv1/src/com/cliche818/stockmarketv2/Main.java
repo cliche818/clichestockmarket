@@ -213,9 +213,15 @@ public class Main extends ListActivity {
 				stockCompanyName = "Company Name: N/A";
 				
 				companyNameOut.setText (stockCompanyName);
-				symbolOut.setText(stockSymbol + " is not a valid stock symbol in TSX");
+				symbolOut.setText(stockSymbol + " is not a valid stock symbol in the TSX");
 				priceOut.setText(stockQuote);
 				changePercentageOut.setText(stockChangePercentage);
+				
+				//only now is it possible to add stock symbols to database
+				insertSimulation.setEnabled(false);
+				setNoOfStocks.setEnabled(false);
+				
+				
 				
 			}
 			//correct stock quote was entered
@@ -392,6 +398,7 @@ public class Main extends ListActivity {
 		
 		
 		//-----------------------------------------Start of Core of Simulation Module in GetStockQuote Tab----------------------------------------------------
+		//this is the BUY button (very important
 		insertSimulation.setOnClickListener(new View.OnClickListener() {
 
 			@Override
@@ -407,8 +414,8 @@ public class Main extends ListActivity {
 					globalToast.show();
 				}	
 				else{
-					createStock(noOfStocksString);
-					tabHost.setCurrentTab(2);
+					if (createStock(noOfStocksString) == 0)
+						tabHost.setCurrentTab(2);
 				}
 			}	
 		});
@@ -628,23 +635,25 @@ public class Main extends ListActivity {
 		return stockTxt;
 	}
 	
-	private void createStock(String noOfStocksString){
+	private int createStock(String noOfStocksString){
 
 		//operation to change the user's bank account (buying)
 		BigDecimal stockQuoteBigDecimal = new BigDecimal (stockQuote);
 		BigDecimal noOfStocksBigDecimal = new BigDecimal (noOfStocksString);
 		
 		stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noOfStocksBigDecimal);
-		bankAccountBigDecimal = bankAccountBigDecimal.subtract(stockQuoteBigDecimal);
+		
 		
 		//check if there the user has enough cash....don't want cash account to go below 0
-		if (bankAccountBigDecimal.compareTo(NO_MONEY) == -1){
+		if (stockQuoteBigDecimal.compareTo(bankAccountBigDecimal) == 1){
 			globalToast.cancel();
 			globalToast.setText("You don't have enough money!");
 			globalToast.show();
+			return -1;
 		}
 			
 		else{
+			bankAccountBigDecimal = bankAccountBigDecimal.subtract(stockQuoteBigDecimal);
 			
 			//forgot to set our "global" bank account string, bug fix
 			SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
@@ -669,6 +678,8 @@ public class Main extends ListActivity {
 			globalToast.show();
 			
 			fillData();
+			
+			return 0;
 		}
 		
 		
