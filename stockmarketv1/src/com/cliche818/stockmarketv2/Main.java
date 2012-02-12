@@ -108,10 +108,11 @@ public class Main extends ListActivity {
 	
 	/*
 	 * This sub class is to asynchronously refresh the simulation data
+	 * For some reason< i need to use Integer instead of int (investigating)
 	 */
-	private class refreshStocksAsync extends AsyncTask <Void, Void, Void>{
+	private class refreshStocksAsync extends AsyncTask <Void, Void, Integer>{
 
-		protected Void doInBackground(Void... arg0) {
+		protected Integer doInBackground(Void... arg0) {
 			
 			Cursor cur = sDbHelper.fetchAllStocks();
 			String stockToUpdate = "";
@@ -122,6 +123,19 @@ public class Main extends ListActivity {
 			while (cur.isAfterLast() == false){
 				stockToUpdate = cur.getString(1);
 				updatedRawData = getStockInfo(stockToUpdate);
+				
+				//require a debug message here
+				Log.i(TAG, updatedRawData);
+				
+				//check if internet cuts off and getting no data
+				if (updatedRawData.length() == 0)
+				{
+					globalToast.cancel();
+					globalToast.setText("There is no Internet, can't get data!");
+					globalToast.show();
+					return -1;
+				}
+				
 				String[] tokens = updatedRawData.split(",");
 				//since I know stock quote is the 2nd token
 				sDbHelper.updateStock(cur.getInt(0), stockToUpdate, tokens[1], cur.getString(3), cur.getString(4));
@@ -129,15 +143,17 @@ public class Main extends ListActivity {
 			}
 			
 			
-			return null;
+			return 0;
 		}
-		
-		protected void onPostExecute(Void result) {
+
+		protected void onPostExecute(Integer result) {
+			
 			fillData();
 			refreshSimulation.setText("Refresh");
 			refreshSimulation.setEnabled(true);
 			//set the time for when it was updated
-			updateOut.setText("Updated at: " + dateFormat.format(new Date()) );
+			if (result == 0)
+				updateOut.setText("Updated at: " + dateFormat.format(new Date()) );
 		}
 	}
 	
@@ -162,6 +178,16 @@ public class Main extends ListActivity {
 			//require a debug message here
 			Log.i(TAG, stockTxt);
 			
+			if (stockTxt.length() == 0)
+			{
+				globalToast.cancel();
+				globalToast.setText("There is no Internet, can't get data!");
+				globalToast.show();
+				getQuote.setText("Get Stock Quote");
+				getQuote.setEnabled(true);
+				return;
+			}
+			
 			String[] tokens = stockTxt.split(",");
 
 			stockSymbol = tokens[0];
@@ -170,9 +196,9 @@ public class Main extends ListActivity {
 			stockCompanyName = tokens[3];
 
 			// parse the individual tokens, taking out "" and .to for stock symbol
-			String fstockSymbol = stockSymbol.substring(1,stockSymbol.length() - 4);
-			String fstockChangePercentage = stockChangePercentage.substring(1,stockChangePercentage.length() - 3);
-			String fstockCompanyName = stockCompanyName.substring(1, stockCompanyName.length() - 1);
+			stockSymbol = stockSymbol.substring(1,stockSymbol.length() - 4);
+			stockChangePercentage = stockChangePercentage.substring(1,stockChangePercentage.length() - 3);
+			stockCompanyName = stockCompanyName.substring(1, stockCompanyName.length() - 1);
 			
 			// checking if a correct stock symbol was entering
 			// looking to see if stock price is 0.00, which is not possible
@@ -183,27 +209,27 @@ public class Main extends ListActivity {
 				globalToast.show();
 				
 				stockQuote = "Stock Quote: N/A";
-				fstockChangePercentage = "Percent Change: N/A";
+				stockChangePercentage = "Percent Change: N/A";
 				stockCompanyName = "Company Name: N/A";
 				
 				companyNameOut.setText (stockCompanyName);
-				symbolOut.setText(fstockSymbol + " is not a valid stock symbol in Toronto Stock Exchange (TSX)");
+				symbolOut.setText(stockSymbol + " is not a valid stock symbol in TSX");
 				priceOut.setText(stockQuote);
-				changePercentageOut.setText(fstockChangePercentage);
+				changePercentageOut.setText(stockChangePercentage);
 				
 			}
 			//correct stock quote was entered
 			else {
 				
-				companyNameOut.setText ("Company Name: " + fstockCompanyName);
-				symbolOut.setText("Stock Symbol: " + fstockSymbol);
+				companyNameOut.setText ("Company Name: " + stockCompanyName);
+				symbolOut.setText("Stock Symbol: " + stockSymbol);
 				priceOut.setText("Stock Quote: " + stockQuote);
-				changePercentageOut.setText("Percent Change: " + fstockChangePercentage + "%");
+				changePercentageOut.setText("Percent Change: " + stockChangePercentage + "%");
 				
 			}
 				
 			// getting positive or negative sign
-			char c = fstockChangePercentage.charAt(0);
+			char c = stockChangePercentage.charAt(0);
 
 			if (c == '-')
 				mpBad.start();
@@ -565,7 +591,7 @@ public class Main extends ListActivity {
 	protected String getStockInfo( String symbolInput){
 		
 		URL url;
-		String stockTxt = "bad data or something bad happened";
+		String stockTxt = "";
 		try {
 				// getting info from Yahoo Finance API [meat of the program]
 				url = new URL(
