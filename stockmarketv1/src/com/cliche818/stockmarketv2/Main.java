@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import android.R.id;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.ContentValues;
@@ -30,7 +31,9 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.Button;
 import android.widget.EditText;
@@ -42,7 +45,7 @@ import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class Main extends ListActivity {
+public class Main extends ListActivity implements OnClickListener {
 	
 	//debug constants
 	private static final String TAG = "stockmarketv2";
@@ -82,7 +85,6 @@ public class Main extends ListActivity {
 	
 	//CONSTANTS
 	private static final String NOTVALIDSTOCKPRICE = "0.00";
-	private static final BigDecimal NO_MONEY = new BigDecimal ("0.00");
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat ("hh:mm a 'on' yyyy-MM-dd");
 	
 	// Database
@@ -253,10 +255,7 @@ public class Main extends ListActivity {
 				saveToPortfolio.setText("Save to Portfolio") ;
 				saveToPortfolio.setClickable(true) ;
 			}
-			saveToPortfolio.setVisibility(View.VISIBLE) ;
-			
-			// erases edit text view after getting quote
-			setSymbol.setText("");
+			saveToPortfolio.setVisibility(View.VISIBLE) ;			
 			
 			//allow the user to get other stocks again
 			getQuote.setText("Get Stock Quote");
@@ -352,127 +351,15 @@ public class Main extends ListActivity {
 		mpGood = MediaPlayer.create(this, R.raw.good);
 		mpBad = MediaPlayer.create(this, R.raw.bad);
 		//-----------------------------------------End of Setting up Views for the App-----------------------------------------------------
-		
-		
-		//-----------------------------------------Start of Core of the Get Stock Module---------------------------------------------------
-		getQuote.setOnClickListener(new View.OnClickListener() {
 
-			@Override
-			public void onClick(View v) {
-				
-				hideKeyboard();
-				
-				//disable the getQuoteButton
-				getQuote.setText("Getting Stock Quote");
-				getQuote.setEnabled(false);
-				
-				//being diligent in checking for Internet every time
-				isInternet();
-				
-				String symbolInput = setSymbol.getText().toString();
-				
-				if (symbolInput.length() == 0) {
-					/*Toast noSymbol = Toast.makeText(Main.this,
-							"A stock symbol is required to continue",
-							Toast.LENGTH_LONG);*/
-					globalToast.cancel();
-					globalToast.setText("A stock symbol is required to continue");
-					globalToast.show();
-					
-					//re-enable getQuote button
-					getQuote.setText("Get Stock Quote");
-					getQuote.setEnabled(true);
-				}
+		getQuote.setOnClickListener(this);
+		
+		insertSimulation.setOnClickListener(this);
+		
+		refreshSimulation.setOnClickListener(this);
 
-				else {
-					getStocksAsync getStockTask = new getStocksAsync();
-					getStockTask.execute(symbolInput);
-					
-					//only now is it possible to add stock symbols to database
-					insertSimulation.setEnabled(true);
-					setNoOfStocks.setEnabled(true);
-				}
-			}
-		});
-		//-----------------------------------------End of Core of the Get Stock Module---------------------------------------------------
-		
-		
-		//-----------------------------------------Start of Core of Simulation Module in GetStockQuote Tab----------------------------------------------------
-		//this is the BUY button (very important
-		insertSimulation.setOnClickListener(new View.OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				hideKeyboard();
-				
-				String noOfStocksString = setNoOfStocks.getText().toString();
-				
-				//check that a number is indeed entered
-				if (noOfStocksString.length() == 0) {
-					globalToast.cancel();
-					globalToast.setText("A number is required to continue");
-					globalToast.show();
-				}	
-				else{
-					if (createStock(noOfStocksString) == 0)
-						tabHost.setCurrentTab(2);
-				}
-			}	
-		});
-		
-		//-----------------------------------------End of Core of Simulation Module in GetStockQuote Tab----------------------------------------------------
-		
-		
-		//-----------------------------------------Start of Core of Simulation Module in GetStockQuote Tab----------------------------------------------------
-		refreshSimulation.setOnClickListener(new View.OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				refreshStocksAsync refreshTask = new refreshStocksAsync();
-				refreshSimulation.setText("Refreshing");
-				refreshSimulation.setEnabled(false);
-				refreshTask.execute();
-			}	
-		});
-		
-		
-		
-		//-----------------------------------------End of Core of Simulation Module in GetStockQuote Tab----------------------------------------------------
-		
-		
 		// ------------------------------------------- PORTFOLIO STUFF -----------------------------------------------//
-		saveToPortfolio.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				// Report if no ticker inserted
-				if (lastTicker == null || lastTicker == "") {
-					Toast dbError = Toast.makeText(Main.this,
-							"There was no stock ticker to add.",
-							Toast.LENGTH_LONG);
-					dbError.show();
-					return ;
-				// Report if already exist
-				} else if (existInDB(lastTicker)) {
-					Toast dbError = Toast.makeText(Main.this,
-							"This company is already in your portfolio!",
-							Toast.LENGTH_LONG);
-					dbError.show();
-					return ;
-				} else {
-					// Report if error
-					if (!insertInDB(lastTicker)) {
-						Toast dbError = Toast.makeText(Main.this,
-								"I can't seem to add this to the portfolio, please restart the application and try again.",
-								Toast.LENGTH_LONG);
-						dbError.show();
-						return ;
-					}
-					// User feedback
-					saveToPortfolio.setText("Done") ;
-					saveToPortfolio.setClickable(false) ;
-				}
-			}
-		}) ;
+		saveToPortfolio.setOnClickListener(this) ;
 
 		// Get portfolio variables
 		portfolio = (ListView) findViewById(R.id.pfList);
@@ -488,7 +375,14 @@ public class Main extends ListActivity {
     public void onCreateContextMenu(ContextMenu menu, View v,
             ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        menu.add(0, DELETE_ID, 0, R.string.menu_delete);
+        if (v.getId()== id.list) {
+            AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)menuInfo;
+            //first select linear layout
+            LinearLayout selectedLinearLayout = ((LinearLayout) info.targetView);
+            TextView selectedStock = (TextView) selectedLinearLayout.findViewById(R.id.stockText);
+            menu.setHeaderTitle(selectedStock.getText());
+            menu.add(0, DELETE_ID, 0, R.string.menu_delete);
+        }
     }
 
     /*
@@ -779,6 +673,118 @@ public class Main extends ListActivity {
 		adapter = new SimpleCursorAdapter(this,	R.layout.portfolio_item, dbCursor, new String[] {"Ticker"},	new int[] {R.id.pfliTicker});
 		portfolio.setAdapter(adapter);
 	}
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		switch (v.getId())
+		{
+		case R.id.get_quote_button:
+			getQuoteButtonOnClick();
+			break;
+		case R.id.insert_button:
+			insertSimulationOnClick();
+			break;
+		case R.id.refreshSimulation:
+			refreshSimulationOnClick();
+			break;
+		case R.id.save_to_portfolio_button:
+			saveToPortfolioOnClick();
+			break;
+		}
+	}
 	
+	public void getQuoteButtonOnClick() {
+		
+		hideKeyboard();
+		
+		//disable the getQuoteButton
+		getQuote.setText("Getting Stock Quote");
+		getQuote.setEnabled(false);
+		
+		//being diligent in checking for Internet every time
+		isInternet();
+		
+		String symbolInput = setSymbol.getText().toString();
+		
+		if (symbolInput.length() == 0) {
+			/*Toast noSymbol = Toast.makeText(Main.this,
+					"A stock symbol is required to continue",
+					Toast.LENGTH_LONG);*/
+			globalToast.cancel();
+			globalToast.setText("A stock symbol is required to continue");
+			globalToast.show();
+			
+			//re-enable getQuote button
+			getQuote.setText("Get Stock Quote");
+			getQuote.setEnabled(true);
+		}
+
+		else {
+			getStocksAsync getStockTask = new getStocksAsync();
+			getStockTask.execute(symbolInput);
+			
+			//only now is it possible to add stock symbols to database
+			insertSimulation.setEnabled(true);
+			setNoOfStocks.setEnabled(true);
+		}
+	}	
+	
+	public void insertSimulationOnClick() {
+		hideKeyboard();
+		
+		String noOfStocksString = setNoOfStocks.getText().toString();
+		
+		//check that a number is indeed entered
+		if (noOfStocksString.length() == 0) {
+			globalToast.cancel();
+			globalToast.setText("A number is required to continue");
+			globalToast.show();
+		}	
+		else{
+			if (createStock(noOfStocksString) == 0)
+			{
+				TabHost tabHost = (TabHost) findViewById(R.id.tabhost);
+				tabHost.setCurrentTab(2);
+			}
+		}
+	}
+	
+	public void refreshSimulationOnClick() {
+		refreshStocksAsync refreshTask = new refreshStocksAsync();
+		refreshSimulation.setText("Refreshing");
+		refreshSimulation.setEnabled(false);
+		refreshTask.execute();
+	}
+	
+	public void saveToPortfolioOnClick() {
+		// Report if no ticker inserted
+		if (lastTicker == null || lastTicker == "") {
+			Toast dbError = Toast.makeText(Main.this,
+					"There was no stock ticker to add.",
+					Toast.LENGTH_LONG);
+			dbError.show();
+			return ;
+		// Report if already exist
+		} else if (existInDB(lastTicker)) {
+			Toast dbError = Toast.makeText(Main.this,
+					"This company is already in your portfolio!",
+					Toast.LENGTH_LONG);
+			dbError.show();
+			return ;
+		} else {
+			// Report if error
+			if (!insertInDB(lastTicker)) {
+				Toast dbError = Toast.makeText(Main.this,
+						"I can't seem to add this to the portfolio, please restart the application and try again.",
+						Toast.LENGTH_LONG);
+				dbError.show();
+				return ;
+			}
+			// User feedback
+			saveToPortfolio.setText("Done") ;
+			saveToPortfolio.setClickable(false) ;
+		}
+	}
 	
 }
