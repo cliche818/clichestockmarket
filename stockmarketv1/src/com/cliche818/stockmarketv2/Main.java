@@ -37,9 +37,11 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TabHost;
 import android.widget.TextView;
@@ -320,30 +322,36 @@ public class Main extends ListActivity implements OnClickListener {
 		//Setting up Get Quote Module
 		TabHost.TabSpec stockQuoteScreen = tabHost.newTabSpec("StockQuoteTab");
 		stockQuoteScreen.setContent(R.id.stockQuote);
-		stockQuoteScreen.setIndicator("Stock Quote", getResources().getDrawable(R.drawable.stockquote_grey));
+		stockQuoteScreen.setIndicator("Stock Quote", getResources().getDrawable(android.R.drawable.ic_menu_search));
 		tabHost.addTab(stockQuoteScreen);
 		
 		//Setting up Portfolio
 		TabHost.TabSpec portfolioScreen = tabHost.newTabSpec("Portfolio");
 		portfolioScreen.setContent(R.id.portfolio);
-		portfolioScreen.setIndicator("Portfolio", getResources().getDrawable(R.drawable.stockquote_grey));
+		portfolioScreen.setIndicator("Portfolio", getResources().getDrawable(R.drawable.ic_action_copy));
 		tabHost.addTab(portfolioScreen);
 		
 		//Setting up Simulation Module
 		TabHost.TabSpec simulationScreen = tabHost.newTabSpec("simulationTab");
 		simulationScreen.setContent(R.id.simulation);
-		simulationScreen.setIndicator("Simulation", getResources().getDrawable(R.drawable.stockquote_grey));
+		simulationScreen.setIndicator("Simulation", getResources().getDrawable(R.drawable.ic_action_paste));
 		tabHost.addTab(simulationScreen);
+		
+		for (int i = 0; i < tabHost.getTabWidget().getChildCount(); i++) {
+			RelativeLayout rl = (RelativeLayout)tabHost.getTabWidget().getChildAt(i);
+			ImageView iv = (ImageView)rl.getChildAt(0);
+			iv.setPadding(0, 0, 0, 15);
+		 }
 		
 		tabHost.setCurrentTab(0);
 		
 		//check for internet initially
-		if (isInternet()){
+		if (!isInternet()){
 			/*Toast yesInternet = Toast.makeText(Main.this,
 					"Internet is ON, you are clear to engage!",
 					Toast.LENGTH_LONG);*/
 			globalToast.cancel();
-			globalToast.setText("Internet is ON, you are clear to engage!");
+			globalToast.setText("Internet is OFF!");
 			globalToast.show();
 		}
 		

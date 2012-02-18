@@ -18,8 +18,11 @@ public class titlepage extends Activity {
     
     class titlePageHandler implements Runnable{
     	public void run(){
-    		startActivity(new Intent(getApplication (), Main.class));
-    		titlepage.this.finish ();
+    		Intent myIntent = new Intent(getApplication (), Main.class);
+    		myIntent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+    		startActivity(myIntent);
+    		finish ();
+    		overridePendingTransition(0, 0);
     	}
     }
 }

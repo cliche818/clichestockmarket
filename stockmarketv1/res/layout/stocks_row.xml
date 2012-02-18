@@ -10,7 +10,7 @@
     	android:layout_gravity="center_vertical"
     	android:layout_height="wrap_content"
     	android:id="@+id/stockText" 
-    	android:textSize="20px"
+    	android:textSize="20dp"
     	android:textStyle="bold">
 	</TextView>
 
@@ -20,8 +20,8 @@
     	android:layout_gravity="center_vertical"
     	android:layout_height="wrap_content"
     	android:id="@+id/stockText2" 
-    	android:paddingLeft="10px"
-    	android:textSize="20px">
+    	android:paddingLeft="10dp"
+    	android:textSize="20dp">
 	</TextView>
 	
 	<TextView
@@ -30,8 +30,8 @@
     	android:layout_gravity="center_vertical"
     	android:layout_height="wrap_content"
     	android:id="@+id/stockText3" 
-    	android:paddingLeft="10px"
-    	android:textSize="20px">
+    	android:paddingLeft="10dp"
+    	android:textSize="20dp">
 	</TextView>
 	
 	<TextView
@@ -40,8 +40,8 @@
     	android:layout_gravity="center_vertical"
     	android:layout_height="wrap_content"
     	android:id="@+id/stockText4" 
-    	android:paddingLeft="10px"
-    	android:textSize="20px">
+    	android:paddingLeft="10dp"
+    	android:textSize="20dp">
 	</TextView>
 	
 </LinearLayout>
