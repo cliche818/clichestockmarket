@@ -398,9 +398,13 @@ public class Main extends ListActivity implements OnClickListener {
     public boolean onContextItemSelected(final MenuItem item) {
         switch(item.getItemId()) {
             case DELETE_ID:
+            	
+            	final AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+            	final Cursor cur = sDbHelper.fetchStock(info.id);
+            	
             	final Dialog sellDialog = new Dialog(Main.this);
             	sellDialog.setContentView (R.layout.sellpage);
-            	sellDialog.setTitle("Selling");
+            	sellDialog.setTitle("Selling " + cur.getString(1));
             	sellDialog.setCancelable(true);
             	sellDialog.show();
             	
@@ -411,7 +415,7 @@ public class Main extends ListActivity implements OnClickListener {
             	sellAllButton.setOnClickListener (new View.OnClickListener (){
         			@Override
         				public void onClick (View v){
-		    				AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+
 		                    
 		                    //before deleting stock, it must first be "sold"
 		                    //operations to change the user's bankAccount information
@@ -440,7 +444,7 @@ public class Main extends ListActivity implements OnClickListener {
 					
 					@Override
 					public void onClick(View v) {
-						AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+						
 	                    
 						String noToSellString = noToSellInput.getText().toString();
 						
@@ -454,7 +458,7 @@ public class Main extends ListActivity implements OnClickListener {
 		                    //before deleting stock, it must first be "sold"
 		                    //operations to change the user's bankAccount information
 							
-		                    Cursor cur = sDbHelper.fetchStock(info.id);
+		                    
 		        			BigDecimal stockQuoteBigDecimal = new BigDecimal (cur.getString(3));
 		        			BigDecimal noOfStocksBigDecimal = new BigDecimal (cur.getString(4));
 		        			
