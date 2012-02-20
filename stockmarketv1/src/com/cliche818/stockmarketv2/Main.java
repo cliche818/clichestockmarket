@@ -72,6 +72,7 @@ public class Main extends ListActivity implements OnClickListener {
 	
 	//declare globalToast
 	private ErrorToast mToast;
+	private YahooCommunicator mYahooCommunicator;
 	
 	//shared preference name
 	private static final String PREFS_NAME = "MyPrefsFile";
@@ -161,98 +162,6 @@ public class Main extends ListActivity implements OnClickListener {
 		}
 	}
 	
-	/*
-	 * This sub class is to asynchronously get stock data for GetStock Module
-	 * @param 1st argument is params, the type of the parameters sent to the task upon execution
-	 * @param 2nd argument is progress, the type of progress units published during the background computation
-	 * @param Result, the type of the result of the background computation
-	 */
-	private class getStocksAsync extends AsyncTask <String, Void, String>{
-
-	
-		protected String doInBackground(String... symbolInput) {
-			
-			String cleanedSymbolInput = symbolInput[0].replace(" ", "");
-			String stockTxt = getStockInfo(cleanedSymbolInput);
-			return stockTxt;
-		}
-
-
-		protected void onPostExecute(String stockTxt) {
-			//require a debug message here
-			Log.i(TAG, stockTxt);
-			
-			if (stockTxt.length() == 0)
-			{
-				mToast.showErrorMessage("There is no Internet, can't get data!");
-				
-				getQuote.setText("Get Stock Quote");
-				getQuote.setEnabled(true);
-				return;
-			}
-			
-			String[] tokens = stockTxt.split(",");
-
-			stockSymbol = tokens[0];
-			stockQuote = tokens[1];
-			stockChangePercentage = tokens[2];
-			stockCompanyName = tokens[3];
-
-			// parse the individual tokens, taking out "" and .to for stock symbol
-			stockSymbol = stockSymbol.substring(1,stockSymbol.length() - 4);
-			stockChangePercentage = stockChangePercentage.substring(1,stockChangePercentage.length() - 3);
-			stockCompanyName = stockCompanyName.substring(1, stockCompanyName.length() - 1);
-			
-			// checking if a correct stock symbol was entering
-			// looking to see if stock price is 0.00, which is not possible
-			if ( stockQuote.compareTo(NOTVALIDSTOCKPRICE) == 0){
-				
-				mToast.showErrorMessage("A invalid stock symbol was entered");
-				
-				stockQuote = "Stock Quote: N/A";
-				stockChangePercentage = "Percent Change: N/A";
-				stockCompanyName = "Company Name: N/A";
-				
-				companyNameOut.setText (stockCompanyName);
-				symbolOut.setText(stockSymbol + " is not a valid stock symbol in the TSX");
-				priceOut.setText(stockQuote);
-				changePercentageOut.setText(stockChangePercentage);
-				
-				//only now is it possible to add stock symbols to database
-				insertSimulation.setEnabled(false);
-				setNoOfStocks.setEnabled(false);
-				
-				
-				
-			}
-			//correct stock quote was entered
-			else {
-				
-				companyNameOut.setText ("Company Name: " + stockCompanyName);
-				symbolOut.setText("Stock Symbol: " + stockSymbol);
-				priceOut.setText("Stock Quote: " + stockQuote);
-				changePercentageOut.setText("Percent Change: " + stockChangePercentage + "%");
-				
-			}
-
-			// Keeping ticker value
-			lastTicker = setSymbol.getText().toString() ;
-			
-			// Show save to portfolio button
-			if (existInDB(lastTicker)) {
-				saveToPortfolio.setText("Already in portfolio") ;
-				saveToPortfolio.setClickable(false) ;
-			} else {
-				saveToPortfolio.setText("Save to Portfolio") ;
-				saveToPortfolio.setClickable(true) ;
-			}
-			saveToPortfolio.setVisibility(View.VISIBLE) ;			
-			
-			//allow the user to get other stocks again
-			getQuote.setText("Get Stock Quote");
-			getQuote.setEnabled(true);
-		}
-	}
 	
 	/*
 	 * This method is the startup method, all buttons are created and linked here
@@ -272,6 +181,7 @@ public class Main extends ListActivity implements OnClickListener {
 		
 		//global toast
 		mToast = new ErrorToast (getApplicationContext());
+		mYahooCommunicator = new YahooCommunicator(this);
 		
 		// connect reference variables with our view objects
 		setSymbol = (EditText) findViewById(R.id.setSymbol);
@@ -832,14 +742,93 @@ public class Main extends ListActivity implements OnClickListener {
 		}
 
 		else {
-			getStocksAsync getStockTask = new getStocksAsync();
-			getStockTask.execute(symbolInput);
+			/*getStocksAsync getStockTask = new getStocksAsync();
+			getStockTask.execute(symbolInput.replace(" ", ""));*/
+			mYahooCommunicator.getStockQuote(symbolInput);
+			
+			
+		}
+	}
+	
+	public void getQuoteButtonAftermath (String stockTxt){
+		//require a debug message here
+		Log.i(TAG, stockTxt);
+		
+		if (stockTxt.length() == 0)
+		{
+			mToast.showErrorMessage("There is no Internet, can't get data!");
+			
+			getQuote.setText("Get Stock Quote");
+			getQuote.setEnabled(true);
+			return;
+		}
+		
+		String[] tokens = stockTxt.split(",");
+
+		stockSymbol = tokens[0];
+		stockQuote = tokens[1];
+		stockChangePercentage = tokens[2];
+		stockCompanyName = tokens[3];
+
+		// parse the individual tokens, taking out "" and .to for stock symbol
+		stockSymbol = stockSymbol.substring(1,stockSymbol.length() - 4);
+		stockChangePercentage = stockChangePercentage.substring(1,stockChangePercentage.length() - 3);
+		stockCompanyName = stockCompanyName.substring(1, stockCompanyName.length() - 1);
+		
+		// checking if a correct stock symbol was entering
+		// looking to see if stock price is 0.00, which is not possible
+		if ( stockQuote.compareTo(NOTVALIDSTOCKPRICE) == 0){
+			
+			mToast.showErrorMessage("A invalid stock symbol was entered");
+			
+			stockQuote = "Stock Quote: N/A";
+			stockChangePercentage = "Percent Change: N/A";
+			stockCompanyName = "Company Name: N/A";
+			
+			companyNameOut.setText (stockCompanyName);
+			symbolOut.setText(stockSymbol + " is not a valid stock symbol in the TSX");
+			priceOut.setText(stockQuote);
+			changePercentageOut.setText(stockChangePercentage);
 			
 			//only now is it possible to add stock symbols to database
-			insertSimulation.setEnabled(true);
-			setNoOfStocks.setEnabled(true);
+			insertSimulation.setEnabled(false);
+			setNoOfStocks.setEnabled(false);
+			
+			
+			
 		}
-	}	
+		//correct stock quote was entered
+		else {
+			
+			companyNameOut.setText ("Company Name: " + stockCompanyName);
+			symbolOut.setText("Stock Symbol: " + stockSymbol);
+			priceOut.setText("Stock Quote: " + stockQuote);
+			changePercentageOut.setText("Percent Change: " + stockChangePercentage + "%");
+			
+		}
+
+		// Keeping ticker value
+		lastTicker = setSymbol.getText().toString() ;
+		
+		// Show save to portfolio button
+		if (existInDB(lastTicker)) {
+			saveToPortfolio.setText("Already in portfolio") ;
+			saveToPortfolio.setClickable(false) ;
+		} else {
+			saveToPortfolio.setText("Save to Portfolio") ;
+			saveToPortfolio.setClickable(true) ;
+		}
+		saveToPortfolio.setVisibility(View.VISIBLE) ;			
+		
+		//allow the user to get other stocks again
+		getQuote.setText("Get Stock Quote");
+		getQuote.setEnabled(true);
+		
+		//only now is it possible to add stock symbols to database
+		insertSimulation.setEnabled(true);
+		setNoOfStocks.setEnabled(true);
+	
+	}
 	
 	/*
 	 * This method is linked to the Buy button
