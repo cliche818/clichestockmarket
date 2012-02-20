@@ -79,7 +79,7 @@ public class Main extends ListActivity implements OnClickListener {
 	//menu variables
 	private static final int HELP_ID = Menu.FIRST;
 	private static final int ABOUT_ID = 2;
-	private static final int DELETE_ID = Menu.FIRST + 3;
+	private static final int DELETE_ID = 3;
 	
 	//CONSTANTS
 	private static final String NOTVALIDSTOCKPRICE = "0.00";
@@ -128,7 +128,7 @@ public class Main extends ListActivity implements OnClickListener {
 				//require a debug message here
 				Log.i(TAG, updatedRawData);
 				
-				//check if internet cuts off and getting no data
+				//check if Internet cuts off and getting no data
 				if (updatedRawData.length() == 0)
 				{
 					globalToast.cancel();
@@ -263,6 +263,10 @@ public class Main extends ListActivity implements OnClickListener {
 		}
 	}
 	
+	/*
+	 * This method is the startup method, all buttons are created and linked here
+	 * @see android.app.Activity#onCreate(android.os.Bundle)
+	 */
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// Intilize database connection variable
@@ -370,16 +374,24 @@ public class Main extends ListActivity implements OnClickListener {
 		// ------------------------------------------- END PORTFOLIO STUFF -----------------------------------------------//
 	}
 	
+	/*
+	 * This method is the startup method, all buttons are created and linked here
+	 * @param menu the "menu" where I play my options (sell stock)
+	 * @param v the view that this method was called on 
+	 */
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v,
             ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         if (v.getId()== id.list) {
             AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)menuInfo;
-            //first select linear layout
+            
+            //setting the title
+            //first select linear layout then the textview for the company's stock symbol
             LinearLayout selectedLinearLayout = ((LinearLayout) info.targetView);
             TextView selectedStock = (TextView) selectedLinearLayout.findViewById(R.id.stockText);
             menu.setHeaderTitle(selectedStock.getText());
+            
             menu.add(0, DELETE_ID, 0, R.string.menu_delete);
         }
     }
@@ -515,6 +527,10 @@ public class Main extends ListActivity implements OnClickListener {
         return super.onContextItemSelected(item);
     }
 	
+    /*
+     * Creates the options menu for the app
+     * @param menu the "menu" where I placed my options (help and about)
+     */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		boolean result = super.onCreateOptionsMenu(menu);
@@ -524,7 +540,10 @@ public class Main extends ListActivity implements OnClickListener {
 	}
 
 
-
+	/*
+     * Sets the behavior for what each of my options (help and about does) 
+     * @param menu the "menu" where I placed my options (help and about)
+     */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()){
@@ -627,6 +646,10 @@ public class Main extends ListActivity implements OnClickListener {
 		return stockTxt;
 	}
 	
+	/*
+	 * This method adds the stock to the database
+	 * @param noOfStocksString a number of stocks to "buy" in string form
+	 */
 	private int createStock(String noOfStocksString){
 
 		//operation to change the user's bank account (buying)
@@ -677,6 +700,9 @@ public class Main extends ListActivity implements OnClickListener {
 		
 	}
 	
+	/*
+	 * This method displays everything in the database in the ListView "list"
+	 */
 	private void fillData(){
 		// Get all of the notes from the database and create the item list
         Cursor c = sDbHelper.fetchAllStocks();
@@ -703,7 +729,7 @@ public class Main extends ListActivity implements OnClickListener {
 	}
 
 	/*
-	 * hides the keyboard (used after entering something in the editbox)
+	 * hides the keyboard (used after entering something in the EditText)
 	 */
 	public void hideKeyboard () {
 		InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -772,6 +798,10 @@ public class Main extends ListActivity implements OnClickListener {
 		portfolio.setAdapter(adapter);
 	}
 
+	/*
+	 * This method is a switch statement to listen for what button was clicked and call its corresponding method
+	 * @param v the view that the button was pressed in
+	 */
 	@Override
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
@@ -794,6 +824,10 @@ public class Main extends ListActivity implements OnClickListener {
 		}
 	}
 	
+	/*
+	 * This method is linked to the Get Stock Price button
+	 * Gets the stock information (price and etc)
+	 */
 	public void getQuoteButtonOnClick() {
 		
 		hideKeyboard();
@@ -830,6 +864,10 @@ public class Main extends ListActivity implements OnClickListener {
 		}
 	}	
 	
+	/*
+	 * This method is linked to the Buy button
+	 * Inserts (buys) the stock that is seen in the Stock Quote page
+	 */
 	public void insertSimulationOnClick() {
 		hideKeyboard();
 		
@@ -850,6 +888,10 @@ public class Main extends ListActivity implements OnClickListener {
 		}
 	}
 	
+	/*
+	 * This method is linked to the Refresh button
+	 * Refreshes the data in the simulation mode by updating each stock's current price
+	 */
 	public void refreshSimulationOnClick() {
 		refreshStocksAsync refreshTask = new refreshStocksAsync();
 		refreshSimulation.setText("Refreshing");
