@@ -87,6 +87,7 @@ public class Main extends ListActivity implements OnClickListener {
 	
 	//CONSTANTS
 	private static final String NOTVALIDSTOCKPRICE = "0.00";
+	private static final BigDecimal ZERO = new BigDecimal (0);
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat ("hh:mm a 'on' yyyy-MM-dd");
 	
 	// Database
@@ -347,9 +348,6 @@ public class Main extends ListActivity implements OnClickListener {
 		
 		//check for internet initially
 		if (!isInternet()){
-			/*Toast yesInternet = Toast.makeText(Main.this,
-					"Internet is ON, you are clear to engage!",
-					Toast.LENGTH_LONG);*/
 			globalToast.cancel();
 			globalToast.setText("Internet is OFF!");
 			globalToast.show();
@@ -397,30 +395,125 @@ public class Main extends ListActivity implements OnClickListener {
      * Option to delete/sell ALL stock from simulation mode
      */
     @Override
-    public boolean onContextItemSelected(MenuItem item) {
+    public boolean onContextItemSelected(final MenuItem item) {
         switch(item.getItemId()) {
             case DELETE_ID:
-                AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-                
-                //before deleting stock, it must first be "sold"
-                //operations to change the user's bankAccount information
-                Cursor cur = sDbHelper.fetchStock(info.id);
-    			BigDecimal stockQuoteBigDecimal = new BigDecimal (cur.getString(3));
-    			BigDecimal noOfStocksBigDecimal = new BigDecimal (cur.getString(4));
-    			
-    			stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noOfStocksBigDecimal);
-    			bankAccountBigDecimal = bankAccountBigDecimal.add(stockQuoteBigDecimal);
-    			
-    			//forgot to set our "global/stored" bank account string, bug fix
-    			SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
-    			SharedPreferences.Editor editor = userAccount.edit();
-    			editor.putString ("bankAccount", bankAccountBigDecimal.toString());
-    			bankAccountOut.setText(currencyFormat(bankAccountBigDecimal));
-                editor.commit();
-    			
-                sDbHelper.deleteStock(info.id);
-                fillData();
-                return true;
+            	final Dialog sellDialog = new Dialog(Main.this);
+            	sellDialog.setContentView (R.layout.sellpage);
+            	sellDialog.setTitle("Selling");
+            	sellDialog.setCancelable(true);
+            	sellDialog.show();
+            	
+            	Button sellButton = (Button) sellDialog.findViewById(R.id.sell);
+            	Button sellAllButton = (Button) sellDialog.findViewById(R.id.sellAll);
+            	final EditText noToSellInput = (EditText) sellDialog.findViewById(R.id.noToSell);
+            	
+            	sellAllButton.setOnClickListener (new View.OnClickListener (){
+        			@Override
+        				public void onClick (View v){
+		    				AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+		                    
+		                    //before deleting stock, it must first be "sold"
+		                    //operations to change the user's bankAccount information
+		                    Cursor cur = sDbHelper.fetchStock(info.id);
+		        			BigDecimal stockQuoteBigDecimal = new BigDecimal (cur.getString(3));
+		        			BigDecimal noOfStocksBigDecimal = new BigDecimal (cur.getString(4));
+		        			
+		        			stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noOfStocksBigDecimal);
+		        			bankAccountBigDecimal = bankAccountBigDecimal.add(stockQuoteBigDecimal);
+		        			
+		        			//forgot to set our "global/stored" bank account string, bug fix
+		        			SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
+		        			SharedPreferences.Editor editor = userAccount.edit();
+		        			editor.putString ("bankAccount", bankAccountBigDecimal.toString());
+		        			bankAccountOut.setText(currencyFormat(bankAccountBigDecimal));
+		                    editor.commit();
+		        			
+		                    sDbHelper.deleteStock(info.id);
+		                    fillData();
+		                    
+		                    sellDialog.dismiss();
+        			}
+        			});
+            	
+            	sellButton.setOnClickListener(new View.OnClickListener() {
+					
+					@Override
+					public void onClick(View v) {
+						AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+	                    
+						String noToSellString = noToSellInput.getText().toString();
+						
+						if (noToSellString.length() == 0) {
+	        				globalToast.cancel();
+	        				globalToast.setText("A number is required to continue");
+	        				globalToast.show();
+	        			}	
+						
+						else {
+		                    //before deleting stock, it must first be "sold"
+		                    //operations to change the user's bankAccount information
+							
+		                    Cursor cur = sDbHelper.fetchStock(info.id);
+		        			BigDecimal stockQuoteBigDecimal = new BigDecimal (cur.getString(3));
+		        			BigDecimal noOfStocksBigDecimal = new BigDecimal (cur.getString(4));
+		        			
+		        			BigDecimal noToSellBigDecimal = new BigDecimal (noToSellString);
+		        			BigDecimal remainingStocksBigDecimal = noOfStocksBigDecimal.subtract(noToSellBigDecimal);
+		        			
+		        			
+		        			
+		        			//user entered an invalid number (more shares than what he/she has)
+		        			if (remainingStocksBigDecimal.compareTo(ZERO) == -1)
+		        			{
+		        				globalToast.cancel();
+		        				globalToast.setText("An invalid number was entered!");
+		        				globalToast.show();
+		        			}
+		        			
+		        			//user wants to sell ALL
+		        			else if (remainingStocksBigDecimal.compareTo(ZERO) == 0)
+		        			{
+		        				stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noOfStocksBigDecimal);
+			        			bankAccountBigDecimal = bankAccountBigDecimal.add(stockQuoteBigDecimal);
+			        			
+			        			//forgot to set our "global/stored" bank account string, bug fix
+			        			SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
+			        			SharedPreferences.Editor editor = userAccount.edit();
+			        			editor.putString ("bankAccount", bankAccountBigDecimal.toString());
+			        			bankAccountOut.setText(currencyFormat(bankAccountBigDecimal));
+			                    editor.commit();
+			        			
+			                    sDbHelper.deleteStock(info.id);
+			                    fillData();
+			                    
+			                    sellDialog.dismiss();
+		        			}
+		        			
+		        			//user wants to sell SOME
+		        			else
+		        			{
+		        				stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noToSellBigDecimal);
+			        			bankAccountBigDecimal = bankAccountBigDecimal.add(stockQuoteBigDecimal);
+			        			
+			        			//forgot to set our "global/stored" bank account string, bug fix
+			        			SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
+			        			SharedPreferences.Editor editor = userAccount.edit();
+			        			editor.putString ("bankAccount", bankAccountBigDecimal.toString());
+			        			bankAccountOut.setText(currencyFormat(bankAccountBigDecimal));
+			                    editor.commit();
+		        				
+		        				
+		        				sDbHelper.updateStock(cur.getInt(0), cur.getString(1), cur.getString(2), cur.getString(3), remainingStocksBigDecimal.toString());
+		        				fillData();
+		        				
+		        				sellDialog.dismiss();
+		        			}
+						}
+					}
+				});
+            	
+
         }
         return super.onContextItemSelected(item);
     }
@@ -699,6 +792,8 @@ public class Main extends ListActivity implements OnClickListener {
 		case R.id.save_to_portfolio_button:
 			saveToPortfolioOnClick();
 			break;
+
+		
 		}
 	}
 	
