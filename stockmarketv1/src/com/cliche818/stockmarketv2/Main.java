@@ -109,20 +109,23 @@ public class Main extends ListActivity implements OnClickListener {
 	
 	/*
 	 * This sub class is to asynchronously refresh the simulation data
-	 * For some reason< i need to use Integer instead of int (investigating)
+	 * @param 1st argument is params, the type of the parameters sent to the task upon execution
+	 * @param 2nd argument is progress, the type of progress units published during the background computation
+	 * @param Result, the type of the result of the background computation
 	 */
 	private class refreshStocksAsync extends AsyncTask <Void, Void, Integer>{
 
 		protected Integer doInBackground(Void... arg0) {
 			
 			Cursor cur = sDbHelper.fetchAllStocks();
-			String stockToUpdate = "";
-			String updatedRawData = "";
+			/*String stockToUpdate = "";
+			String updatedRawData = "";*/
 			cur.moveToFirst();
 			
 			//update every single stock in my table
 			while (cur.isAfterLast() == false){
-				stockToUpdate = cur.getString(1);
+				updateOneStock (cur);
+				/*stockToUpdate = cur.getString(1);
 				updatedRawData = getStockInfo(stockToUpdate);
 				
 				//require a debug message here
@@ -139,7 +142,7 @@ public class Main extends ListActivity implements OnClickListener {
 				
 				String[] tokens = updatedRawData.split(",");
 				//since I know stock quote is the 2nd token
-				sDbHelper.updateStock(cur.getInt(0), stockToUpdate, tokens[1], cur.getString(3), cur.getString(4));
+				sDbHelper.updateStock(cur.getInt(0), stockToUpdate, tokens[1], cur.getString(3), cur.getString(4));*/
 				cur.moveToNext();
 			}
 			
@@ -234,15 +237,6 @@ public class Main extends ListActivity implements OnClickListener {
 				changePercentageOut.setText("Percent Change: " + stockChangePercentage + "%");
 				
 			}
-				
-			// getting positive or negative sign
-			//disabled sound effect, reason: can barely hear it and doesn't add much to the app
-			/*char c = stockChangePercentage.charAt(0);
-
-			if (c == '-')
-				mpBad.start();
-			else
-				mpGood.start();*/
 
 			// Keeping ticker value
 			lastTicker = setSymbol.getText().toString() ;
@@ -387,7 +381,7 @@ public class Main extends ListActivity implements OnClickListener {
             AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)menuInfo;
             
             //setting the title
-            //first select linear layout then the textview for the company's stock symbol
+            //first select linear layout then the TextView for the company's stock symbol
             LinearLayout selectedLinearLayout = ((LinearLayout) info.targetView);
             TextView selectedStock = (TextView) selectedLinearLayout.findViewById(R.id.stockText);
             menu.setHeaderTitle(selectedStock.getText());
@@ -416,6 +410,17 @@ public class Main extends ListActivity implements OnClickListener {
             	Button sellButton = (Button) sellDialog.findViewById(R.id.sell);
             	Button sellAllButton = (Button) sellDialog.findViewById(R.id.sellAll);
             	final EditText noToSellInput = (EditText) sellDialog.findViewById(R.id.noToSell);
+            	
+            	//before even giving the ability to sell (the stock MUST be updated)
+            	int cantUpdate = updateOneStock (cur);
+            	
+            	if (cantUpdate == -1)
+            	{
+            		globalToast.cancel();
+        			globalToast.setText("Can't sell stock since it can't be updated");
+        			globalToast.show();
+            		sellDialog.dismiss();
+            	}
             	
             	sellAllButton.setOnClickListener (new View.OnClickListener (){
         			@Override
@@ -897,6 +902,34 @@ public class Main extends ListActivity implements OnClickListener {
 		refreshSimulation.setText("Refreshing");
 		refreshSimulation.setEnabled(false);
 		refreshTask.execute();
+	}
+	
+	/*
+	 * Updating one of the stock
+	 */
+	public int updateOneStock (Cursor cur) {
+		String stockToUpdate = "";
+		String updatedRawData = "";
+		
+		stockToUpdate = cur.getString(1);
+		updatedRawData = getStockInfo(stockToUpdate);
+		
+		//require a debug message here
+		Log.i(TAG, updatedRawData);
+		
+		//check if Internet cuts off and getting no data
+		if (updatedRawData.length() == 0)
+		{
+			globalToast.cancel();
+			globalToast.setText("There is no Internet, can't get data!");
+			globalToast.show();
+			return -1;
+		}
+		
+		String[] tokens = updatedRawData.split(",");
+		//since I know stock quote is the 2nd token
+		sDbHelper.updateStock(cur.getInt(0), stockToUpdate, tokens[1], cur.getString(3), cur.getString(4));
+		return 0;
 	}
 	
 	public void saveToPortfolioOnClick() {
