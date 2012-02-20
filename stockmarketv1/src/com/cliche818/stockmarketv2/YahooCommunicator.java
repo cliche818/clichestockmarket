@@ -7,6 +7,8 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import android.app.Dialog;
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -17,6 +19,8 @@ public class YahooCommunicator {
 	private Main mService;
 	public enum Functions {unknown, getStockQuote, refreshOne, refreshAll};
 	private Functions mCaller = Functions.unknown;
+	private Cursor mCur;
+	private Dialog mSellDialog;
 	
 	public YahooCommunicator (Main main)
 	{
@@ -29,6 +33,15 @@ public class YahooCommunicator {
 		getStockTask.execute(symbolInput.replace(" ", ""));
 		mCaller = Functions.getStockQuote;
 		
+	}
+	
+	public void refreshOne (Cursor cur, Dialog sellDialog)
+	{
+		mCur = cur;
+		mSellDialog = sellDialog;
+		getStocksAsync refreshOneTask = new getStocksAsync();
+		refreshOneTask.execute(cur.getString(1));
+		mCaller = Functions.refreshOne;
 	}
 	
 	/*
@@ -88,6 +101,9 @@ public class YahooCommunicator {
 				mService.getQuoteButtonAftermath(stockTxt);
 				break;
 				
+			case refreshOne:
+				mService.refreshOneStockAftermath(stockTxt, mCur, mSellDialog);
+				break;
 			}
 		}	
 	}

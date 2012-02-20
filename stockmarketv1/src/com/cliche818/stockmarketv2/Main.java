@@ -317,13 +317,8 @@ public class Main extends ListActivity implements OnClickListener {
             	final EditText noToSellInput = (EditText) sellDialog.findViewById(R.id.noToSell);
             	
             	//before even giving the ability to sell (the stock MUST be updated)
-            	int cantUpdate = updateOneStock (cur);
+            	mYahooCommunicator.refreshOne (cur, sellDialog);
             	
-            	if (cantUpdate == -1)
-            	{
-            		mToast.showErrorMessage("Can't sell stock since it can't be updated");
-            		sellDialog.dismiss();
-            	}
             	
             	sellAllButton.setOnClickListener (new View.OnClickListener (){
         			@Override
@@ -332,7 +327,7 @@ public class Main extends ListActivity implements OnClickListener {
 		                    
 		                    //before deleting stock, it must first be "sold"
 		                    //operations to change the user's bankAccount information
-		                    Cursor cur = sDbHelper.fetchStock(info.id);
+		                    //Cursor cur = sDbHelper.fetchStock(info.id);
 		        			BigDecimal stockQuoteBigDecimal = new BigDecimal (cur.getString(3));
 		        			BigDecimal noOfStocksBigDecimal = new BigDecimal (cur.getString(4));
 		        			
@@ -348,7 +343,7 @@ public class Main extends ListActivity implements OnClickListener {
 		        			
 		                    sDbHelper.deleteStock(info.id);
 		                    fillData();
-		                    
+		                    cur.close();
 		                    sellDialog.dismiss();
         			}
         			});
@@ -399,7 +394,7 @@ public class Main extends ListActivity implements OnClickListener {
 			        			
 			                    sDbHelper.deleteStock(info.id);
 			                    fillData();
-			                    
+			                    cur.close();
 			                    sellDialog.dismiss();
 		        			}
 		        			
@@ -419,7 +414,7 @@ public class Main extends ListActivity implements OnClickListener {
 		        				
 		        				sDbHelper.updateStock(cur.getInt(0), cur.getString(1), cur.getString(2), cur.getString(3), remainingStocksBigDecimal.toString());
 		        				fillData();
-		        				
+		        				cur.close();
 		        				sellDialog.dismiss();
 		        			}
 						}
@@ -861,6 +856,25 @@ public class Main extends ListActivity implements OnClickListener {
 		refreshSimulation.setText("Refreshing");
 		refreshSimulation.setEnabled(false);
 		refreshTask.execute();
+	}
+	
+	
+	public void refreshOneStockAftermath (String stockTxt, Cursor cur, Dialog sellDialog){
+		Log.i(TAG, stockTxt);
+		
+		//check if Internet cuts off and getting no data
+		if (stockTxt.length() == 0)
+		{
+			mToast.showErrorMessage("There is no Internet, can't sell!");
+			sellDialog.dismiss();
+			cur.close();
+			return;
+		}
+		
+		String[] tokens = stockTxt.split(",");
+		//since I know stock quote is the 2nd token
+		sDbHelper.updateStock(cur.getInt(0), cur.getString(1), tokens[1], cur.getString(3), cur.getString(4));
+		return;
 	}
 	
 	/*
