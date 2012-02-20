@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical" >
+    
+    <TextView 
+       	android:layout_width="wrap_content" 
+       	android:layout_height= "fill_parent"
+       	android:text="Number of stocks to sell:">
+    </TextView>
+    
+    <EditText 
+    	android:layout_width="wrap_content" 
+       	android:layout_height= "fill_parent"
+       	android:id= "@+id/noToSell"
+       	android:hint="Enter Number of Stocks"
+		android:digits="0123456789"
+		android:inputType="number"
+		android:imeOptions="actionDone"
+		android:singleLine="True"> 
+    </EditText>
+    
+    <RelativeLayout
+        android:layout_width="fill_parent"
+    	android:layout_height="40dp"
+    	android:orientation="horizontal">
+    	
+		<Button
+			android:layout_width="wrap_content" 
+	      	android:layout_height= "fill_parent"
+	      	android:text="Sell"
+	      	android:id="@+id/sell">
+		</Button>
+		
+		<Button
+			android:layout_width="wrap_content" 
+	      	android:layout_height= "fill_parent"
+	      	android:text="Sell All"
+	      	android:id="@+id/sellAll"
+	      	android:layout_alignParentRight="True">
+		</Button>
+	</RelativeLayout>
+
+
+</LinearLayout>

@@ -71,7 +71,7 @@ public class Main extends ListActivity implements OnClickListener {
 	private StockDBAdapter sDbHelper;
 	
 	//declare globalToast
-	private static Toast globalToast;
+	private ErrorToast mToast;
 	
 	//shared preference name
 	private static final String PREFS_NAME = "MyPrefsFile";
@@ -184,9 +184,8 @@ public class Main extends ListActivity implements OnClickListener {
 			
 			if (stockTxt.length() == 0)
 			{
-				globalToast.cancel();
-				globalToast.setText("There is no Internet, can't get data!");
-				globalToast.show();
+				mToast.showErrorMessage("There is no Internet, can't get data!");
+				
 				getQuote.setText("Get Stock Quote");
 				getQuote.setEnabled(true);
 				return;
@@ -208,9 +207,7 @@ public class Main extends ListActivity implements OnClickListener {
 			// looking to see if stock price is 0.00, which is not possible
 			if ( stockQuote.compareTo(NOTVALIDSTOCKPRICE) == 0){
 				
-				globalToast.cancel();
-				globalToast.setText("A invalid stock symbol was entered");
-				globalToast.show();
+				mToast.showErrorMessage("A invalid stock symbol was entered");
 				
 				stockQuote = "Stock Quote: N/A";
 				stockChangePercentage = "Percent Change: N/A";
@@ -274,7 +271,7 @@ public class Main extends ListActivity implements OnClickListener {
 		setContentView(R.layout.main);
 		
 		//global toast
-		globalToast = Toast.makeText(getApplicationContext(), "", Toast.LENGTH_SHORT);
+		mToast = new ErrorToast (getApplicationContext());
 		
 		// connect reference variables with our view objects
 		setSymbol = (EditText) findViewById(R.id.setSymbol);
@@ -342,9 +339,7 @@ public class Main extends ListActivity implements OnClickListener {
 		
 		//check for internet initially
 		if (!isInternet()){
-			globalToast.cancel();
-			globalToast.setText("Internet is OFF!");
-			globalToast.show();
+			mToast.showErrorMessage("Internet is OFF!");
 		}
 		
 		//-----------------------------------------End of Setting up Views for the App-----------------------------------------------------
@@ -416,9 +411,7 @@ public class Main extends ListActivity implements OnClickListener {
             	
             	if (cantUpdate == -1)
             	{
-            		globalToast.cancel();
-        			globalToast.setText("Can't sell stock since it can't be updated");
-        			globalToast.show();
+            		mToast.showErrorMessage("Can't sell stock since it can't be updated");
             		sellDialog.dismiss();
             	}
             	
@@ -459,9 +452,7 @@ public class Main extends ListActivity implements OnClickListener {
 						String noToSellString = noToSellInput.getText().toString();
 						
 						if (noToSellString.length() == 0) {
-	        				globalToast.cancel();
-	        				globalToast.setText("A number is required to continue");
-	        				globalToast.show();
+							mToast.showErrorMessage("A number is required to continue");
 	        			}	
 						
 						else {
@@ -480,9 +471,7 @@ public class Main extends ListActivity implements OnClickListener {
 		        			//user entered an invalid number (more shares than what he/she has)
 		        			if (remainingStocksBigDecimal.compareTo(ZERO) == -1)
 		        			{
-		        				globalToast.cancel();
-		        				globalToast.setText("An invalid number was entered!");
-		        				globalToast.show();
+		        				mToast.showErrorMessage("An invalid number was entered!");
 		        			}
 		        			
 		        			//user wants to sell ALL
@@ -596,12 +585,7 @@ public class Main extends ListActivity implements OnClickListener {
 			return true;
 		}
 		else{
-			/*Toast noInternet = Toast.makeText(Main.this,
-					"There is no internet, disengage!",
-					Toast.LENGTH_LONG);*/
-			globalToast.cancel();
-			globalToast.setText("There is no internet, disengage!");
-			globalToast.show();
+			mToast.showErrorMessage("There is no internet, disengage!");
 			return false;
 		}
 		
@@ -666,9 +650,7 @@ public class Main extends ListActivity implements OnClickListener {
 		
 		//check if there the user has enough cash....don't want cash account to go below 0
 		if (stockQuoteBigDecimal.compareTo(bankAccountBigDecimal) == 1){
-			globalToast.cancel();
-			globalToast.setText("You don't have enough money!");
-			globalToast.show();
+			mToast.showErrorMessage("You don't have enough money!");
 			return -1;
 		}
 			
@@ -685,17 +667,12 @@ public class Main extends ListActivity implements OnClickListener {
 			// add the stock to database
 			long insertMsg = sDbHelper.createStock(stockSymbol, stockQuote, stockQuote, noOfStocksString);
 			if (insertMsg == -1){
-				/*Toast noInsert = Toast.makeText(Main.this,
-						"You had already added this stock symbol before!",
-						Toast.LENGTH_LONG);*/
-				globalToast.cancel();
-				globalToast.setText("You had already added this stock symbol before!");
-				globalToast.show();
+				mToast.showErrorMessage("You had already added this stock symbol before!");
+
 			}
 			
-			globalToast.cancel();
-			globalToast.setText("Successfully inserted the stock symbol!");
-			globalToast.show();
+			mToast.showErrorMessage("Successfully inserted the stock symbol!");
+
 			
 			fillData();
 			
@@ -847,12 +824,7 @@ public class Main extends ListActivity implements OnClickListener {
 		String symbolInput = setSymbol.getText().toString();
 		
 		if (symbolInput.length() == 0) {
-			/*Toast noSymbol = Toast.makeText(Main.this,
-					"A stock symbol is required to continue",
-					Toast.LENGTH_LONG);*/
-			globalToast.cancel();
-			globalToast.setText("A stock symbol is required to continue");
-			globalToast.show();
+			mToast.showErrorMessage("A stock symbol is required to continue");
 			
 			//re-enable getQuote button
 			getQuote.setText("Get Stock Quote");
@@ -880,9 +852,7 @@ public class Main extends ListActivity implements OnClickListener {
 		
 		//check that a number is indeed entered
 		if (noOfStocksString.length() == 0) {
-			globalToast.cancel();
-			globalToast.setText("A number is required to continue");
-			globalToast.show();
+			mToast.showErrorMessage("A number is required to continue");
 		}	
 		else{
 			if (createStock(noOfStocksString) == 0)
@@ -906,6 +876,7 @@ public class Main extends ListActivity implements OnClickListener {
 	
 	/*
 	 * Updating one of the stock
+	 * @param cur the cursor to the database pointing at the tuple to update
 	 */
 	public int updateOneStock (Cursor cur) {
 		String stockToUpdate = "";
@@ -920,9 +891,7 @@ public class Main extends ListActivity implements OnClickListener {
 		//check if Internet cuts off and getting no data
 		if (updatedRawData.length() == 0)
 		{
-			globalToast.cancel();
-			globalToast.setText("There is no Internet, can't get data!");
-			globalToast.show();
+			mToast.showErrorMessage("There is no Internet, can't get data!");
 			return -1;
 		}
 		
@@ -931,6 +900,10 @@ public class Main extends ListActivity implements OnClickListener {
 		sDbHelper.updateStock(cur.getInt(0), stockToUpdate, tokens[1], cur.getString(3), cur.getString(4));
 		return 0;
 	}
+	
+	/*
+	 * Global Toast used to display error messages
+	 */
 	
 	public void saveToPortfolioOnClick() {
 		// Report if no ticker inserted
