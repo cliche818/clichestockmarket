@@ -19,8 +19,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -67,8 +65,6 @@ public class Main extends ListActivity implements OnClickListener {
 	Button getQuote;
 	Button insertSimulation;
 	Button refreshSimulation;
-	MediaPlayer mpGood;
-	MediaPlayer mpBad;
 	Button saveToPortfolio ;
 	
 	//database variable
@@ -240,12 +236,13 @@ public class Main extends ListActivity implements OnClickListener {
 			}
 				
 			// getting positive or negative sign
-			char c = stockChangePercentage.charAt(0);
+			//disabled sound effect, reason: can barely hear it and doesn't add much to the app
+			/*char c = stockChangePercentage.charAt(0);
 
 			if (c == '-')
 				mpBad.start();
 			else
-				mpGood.start();
+				mpGood.start();*/
 
 			// Keeping ticker value
 			lastTicker = setSymbol.getText().toString() ;
@@ -301,7 +298,6 @@ public class Main extends ListActivity implements OnClickListener {
 		insertSimulation.setEnabled(false);
 
 		refreshSimulation = (Button) findViewById(R.id.refreshSimulation);
-		setVolumeControlStream(AudioManager.STREAM_MUSIC);
 		
 		//database setup
 		sDbHelper = new StockDBAdapter(this);
@@ -353,9 +349,6 @@ public class Main extends ListActivity implements OnClickListener {
 			globalToast.show();
 		}
 		
-		// music to signal good or bad changes in the stock price
-		mpGood = MediaPlayer.create(this, R.raw.good);
-		mpBad = MediaPlayer.create(this, R.raw.bad);
 		//-----------------------------------------End of Setting up Views for the App-----------------------------------------------------
 
 		getQuote.setOnClickListener(this);
