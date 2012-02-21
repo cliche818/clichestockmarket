@@ -60,6 +60,7 @@ public class Main extends ListActivity implements OnClickListener {
 	TextView priceOut;
 	TextView changePercentageOut;
 	TextView bankAccountOut;
+	TextView assetAccountOut;
 	TextView updateOut;
 	Button getQuote;
 	Button insertSimulation;
@@ -106,6 +107,7 @@ public class Main extends ListActivity implements OnClickListener {
 	
 	//class variable
 	BigDecimal bankAccountBigDecimal;
+	BigDecimal assetAccountBigDecimal;
 	
 	/*
 	 * This method is the startup method, all buttons are created and linked here
@@ -138,6 +140,7 @@ public class Main extends ListActivity implements OnClickListener {
 		changePercentageOut = (TextView) findViewById(R.id.stockChangePercentageOutput);
 		
 		bankAccountOut = (TextView) findViewById(R.id.bankAccountOutput);
+		assetAccountOut = (TextView) findViewById(R.id.assetAccountOutput);
 		updateOut = (TextView) findViewById (R.id.updateOutput);
 
 		getQuote = (Button) findViewById(R.id.get_quote_button);
@@ -156,10 +159,14 @@ public class Main extends ListActivity implements OnClickListener {
 		
 		//creating shared preferences (to save user money/cash account)
 		SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
+		
 		String bankAccountString = userAccount.getString("bankAccount", "100000.00");
 		bankAccountBigDecimal = new BigDecimal(bankAccountString);
+		bankAccountOut.setText("Cash: " + currencyFormat(bankAccountBigDecimal));
 		
-		bankAccountOut.setText(currencyFormat(bankAccountBigDecimal));
+		String assetAccountString = userAccount.getString("assetAccount", "0");
+		assetAccountBigDecimal = new BigDecimal(assetAccountString);
+		assetAccountOut.setText("Assets: " + currencyFormat(assetAccountBigDecimal));
 		
 		//Setting up Tabs
 		final TabHost tabHost = (TabHost)findViewById(R.id.tabhost);
@@ -281,12 +288,18 @@ public class Main extends ListActivity implements OnClickListener {
 		        			
 		        			stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noOfStocksBigDecimal);
 		        			bankAccountBigDecimal = bankAccountBigDecimal.add(stockQuoteBigDecimal);
+		        			assetAccountBigDecimal = assetAccountBigDecimal.subtract(stockQuoteBigDecimal);
 		        			
 		        			//forgot to set our "global/stored" bank account string, bug fix
 		        			SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
 		        			SharedPreferences.Editor editor = userAccount.edit();
+		        			
 		        			editor.putString ("bankAccount", bankAccountBigDecimal.toString());
-		        			bankAccountOut.setText(currencyFormat(bankAccountBigDecimal));
+		        			bankAccountOut.setText("Cash: " + currencyFormat(bankAccountBigDecimal));
+		        			
+		        			editor.putString ("assetAccount", assetAccountBigDecimal.toString());
+		        			assetAccountOut.setText("Assets: " + currencyFormat(assetAccountBigDecimal));
+		        			
 		                    editor.commit();
 		        			
 		                    sDbHelper.deleteStock(info.id);
@@ -332,12 +345,18 @@ public class Main extends ListActivity implements OnClickListener {
 		        			{
 		        				stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noOfStocksBigDecimal);
 			        			bankAccountBigDecimal = bankAccountBigDecimal.add(stockQuoteBigDecimal);
+			        			assetAccountBigDecimal = assetAccountBigDecimal.subtract(stockQuoteBigDecimal);
 			        			
 			        			//forgot to set our "global/stored" bank account string, bug fix
 			        			SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
 			        			SharedPreferences.Editor editor = userAccount.edit();
+			        			
 			        			editor.putString ("bankAccount", bankAccountBigDecimal.toString());
-			        			bankAccountOut.setText(currencyFormat(bankAccountBigDecimal));
+			        			bankAccountOut.setText("Cash: " + currencyFormat(bankAccountBigDecimal));
+			        			
+			        			editor.putString ("assetAccount", assetAccountBigDecimal.toString());
+			        			assetAccountOut.setText("Assets: " + currencyFormat(assetAccountBigDecimal));
+			        			
 			                    editor.commit();
 			        			
 			                    sDbHelper.deleteStock(info.id);
@@ -351,12 +370,17 @@ public class Main extends ListActivity implements OnClickListener {
 		        			{
 		        				stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noToSellBigDecimal);
 			        			bankAccountBigDecimal = bankAccountBigDecimal.add(stockQuoteBigDecimal);
+			        			assetAccountBigDecimal = assetAccountBigDecimal.subtract(stockQuoteBigDecimal);
 			        			
 			        			//forgot to set our "global/stored" bank account string, bug fix
 			        			SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
 			        			SharedPreferences.Editor editor = userAccount.edit();
+			        			
 			        			editor.putString ("bankAccount", bankAccountBigDecimal.toString());
-			        			bankAccountOut.setText(currencyFormat(bankAccountBigDecimal));
+			        			bankAccountOut.setText("Cash: " + currencyFormat(bankAccountBigDecimal));
+			        			editor.putString ("assetAccount", assetAccountBigDecimal.toString());
+			        			assetAccountOut.setText("Assets: " + currencyFormat(assetAccountBigDecimal));
+			        			
 			                    editor.commit();
 		        				
 		        				
@@ -509,12 +533,18 @@ public class Main extends ListActivity implements OnClickListener {
 			
 		else{
 			bankAccountBigDecimal = bankAccountBigDecimal.subtract(stockQuoteBigDecimal);
+			assetAccountBigDecimal = assetAccountBigDecimal.add(stockQuoteBigDecimal);
 			
 			//forgot to set our "global" bank account string, bug fix
 			SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
 			SharedPreferences.Editor editor = userAccount.edit();
+			
 			editor.putString ("bankAccount", bankAccountBigDecimal.toString());
-			bankAccountOut.setText(currencyFormat(bankAccountBigDecimal));
+			bankAccountOut.setText("Cash: " + currencyFormat(bankAccountBigDecimal));
+			
+			editor.putString ("assetAccount", assetAccountBigDecimal.toString());
+			assetAccountOut.setText("Assets: " + currencyFormat(assetAccountBigDecimal));
+			
 			editor.commit();
 			
 			// add the stock to database
