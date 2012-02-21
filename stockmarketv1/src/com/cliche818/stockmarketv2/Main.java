@@ -21,7 +21,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -107,61 +106,6 @@ public class Main extends ListActivity implements OnClickListener {
 	
 	//class variable
 	BigDecimal bankAccountBigDecimal;
-	
-	/*
-	 * This sub class is to asynchronously refresh the simulation data
-	 * @param 1st argument is params, the type of the parameters sent to the task upon execution
-	 * @param 2nd argument is progress, the type of progress units published during the background computation
-	 * @param Result, the type of the result of the background computation
-	 */
-	private class refreshStocksAsync extends AsyncTask <Void, Void, Integer>{
-
-		protected Integer doInBackground(Void... arg0) {
-			
-			Cursor cur = sDbHelper.fetchAllStocks();
-			/*String stockToUpdate = "";
-			String updatedRawData = "";*/
-			cur.moveToFirst();
-			
-			//update every single stock in my table
-			while (cur.isAfterLast() == false){
-				updateOneStock (cur);
-				/*stockToUpdate = cur.getString(1);
-				updatedRawData = getStockInfo(stockToUpdate);
-				
-				//require a debug message here
-				Log.i(TAG, updatedRawData);
-				
-				//check if Internet cuts off and getting no data
-				if (updatedRawData.length() == 0)
-				{
-					globalToast.cancel();
-					globalToast.setText("There is no Internet, can't get data!");
-					globalToast.show();
-					return -1;
-				}
-				
-				String[] tokens = updatedRawData.split(",");
-				//since I know stock quote is the 2nd token
-				sDbHelper.updateStock(cur.getInt(0), stockToUpdate, tokens[1], cur.getString(3), cur.getString(4));*/
-				cur.moveToNext();
-			}
-			
-			
-			return 0;
-		}
-
-		protected void onPostExecute(Integer result) {
-			
-			fillData();
-			refreshSimulation.setText("Refresh");
-			refreshSimulation.setEnabled(true);
-			//set the time for when it was updated
-			if (result == 0)
-				updateOut.setText("Updated at: " + dateFormat.format(new Date()) );
-		}
-	}
-	
 	
 	/*
 	 * This method is the startup method, all buttons are created and linked here
@@ -317,8 +261,12 @@ public class Main extends ListActivity implements OnClickListener {
             	final EditText noToSellInput = (EditText) sellDialog.findViewById(R.id.noToSell);
             	
             	//before even giving the ability to sell (the stock MUST be updated)
-            	mYahooCommunicator.refreshOne (cur, sellDialog);
-            	
+            	if (!mYahooCommunicator.refreshOne (cur, sellDialog) )
+            	{
+            		mToast.showErrorMessage("Busy refreshing!");
+            		cur.close();
+            		sellDialog.dismiss();
+            	}	
             	
             	sellAllButton.setOnClickListener (new View.OnClickListener (){
         			@Override
@@ -736,27 +684,33 @@ public class Main extends ListActivity implements OnClickListener {
 			getQuote.setEnabled(true);
 		}
 
-		else {
-			/*getStocksAsync getStockTask = new getStocksAsync();
-			getStockTask.execute(symbolInput.replace(" ", ""));*/
-			mYahooCommunicator.getStockQuote(symbolInput);
-			
-			
+		else if (!mYahooCommunicator.getStockQuote(symbolInput)){
+			getQuoteButtonAftermath(null);	
 		}
 	}
 	
 	public void getQuoteButtonAftermath (String stockTxt){
-		//require a debug message here
-		Log.i(TAG, stockTxt);
 		
-		if (stockTxt.length() == 0)
+		
+		if (stockTxt == null)
 		{
-			mToast.showErrorMessage("There is no Internet, can't get data!");
-			
+			mToast.showErrorMessage("Busy refreshing!");
 			getQuote.setText("Get Stock Quote");
 			getQuote.setEnabled(true);
 			return;
 		}
+		
+		//require a debug message here
+		Log.d(TAG, stockTxt);
+		
+		if (stockTxt.length() == 0)
+		{
+			mToast.showErrorMessage("There is no Internet, can't get data!");			
+			getQuote.setText("Get Stock Quote");
+			getQuote.setEnabled(true);
+			return;
+		}
+		
 		
 		String[] tokens = stockTxt.split(",");
 
@@ -852,15 +806,49 @@ public class Main extends ListActivity implements OnClickListener {
 	 * Refreshes the data in the simulation mode by updating each stock's current price
 	 */
 	public void refreshSimulationOnClick() {
-		refreshStocksAsync refreshTask = new refreshStocksAsync();
+		//refreshStocksAsync refreshTask = new refreshStocksAsync();
 		refreshSimulation.setText("Refreshing");
 		refreshSimulation.setEnabled(false);
-		refreshTask.execute();
+		//refreshTask.execute();
+		Cursor cur = sDbHelper.fetchAllStocks();
+		if (cur.moveToFirst())
+			mYahooCommunicator.refreshAll(cur);
+		
+		
 	}
 	
+	public void refreshALLAftermath (String stockTxt, Cursor cur)
+	{
+		if (stockTxt.length() == 0)
+		{
+			mToast.showErrorMessage("There is no Internet, can't refresh!");
+			refreshSimulation.setText("Refresh");
+			refreshSimulation.setEnabled(true);
+			cur.close();
+			return;
+		}
+		
+		String[] tokens = stockTxt.split(",");
+		//since I know new stock quote is the 2nd token
+		sDbHelper.updateStock(cur.getInt(0), cur.getString(1), tokens[1], cur.getString(3), cur.getString(4));
+		
+		if (cur.moveToNext())
+		{
+			mYahooCommunicator.refreshAll(cur);
+			return;
+		}
+		
+		fillData();
+		refreshSimulation.setText("Refresh");
+		refreshSimulation.setEnabled(true);
+		cur.close();
+		
+		//set the time for when it was updated
+		updateOut.setText("Updated at: " + dateFormat.format(new Date()) );
+	}
 	
-	public void refreshOneStockAftermath (String stockTxt, Cursor cur, Dialog sellDialog){
-		Log.i(TAG, stockTxt);
+	public void refreshOneAftermath (String stockTxt, Cursor cur, Dialog sellDialog){
+		Log.d(TAG, stockTxt);
 		
 		//check if Internet cuts off and getting no data
 		if (stockTxt.length() == 0)
@@ -875,33 +863,6 @@ public class Main extends ListActivity implements OnClickListener {
 		//since I know stock quote is the 2nd token
 		sDbHelper.updateStock(cur.getInt(0), cur.getString(1), tokens[1], cur.getString(3), cur.getString(4));
 		return;
-	}
-	
-	/*
-	 * Updating one of the stock
-	 * @param cur the cursor to the database pointing at the tuple to update
-	 */
-	public int updateOneStock (Cursor cur) {
-		String stockToUpdate = "";
-		String updatedRawData = "";
-		
-		stockToUpdate = cur.getString(1);
-		updatedRawData = getStockInfo(stockToUpdate);
-		
-		//require a debug message here
-		Log.i(TAG, updatedRawData);
-		
-		//check if Internet cuts off and getting no data
-		if (updatedRawData.length() == 0)
-		{
-			mToast.showErrorMessage("There is no Internet, can't get data!");
-			return -1;
-		}
-		
-		String[] tokens = updatedRawData.split(",");
-		//since I know stock quote is the 2nd token
-		sDbHelper.updateStock(cur.getInt(0), stockToUpdate, tokens[1], cur.getString(3), cur.getString(4));
-		return 0;
 	}
 	
 	/*

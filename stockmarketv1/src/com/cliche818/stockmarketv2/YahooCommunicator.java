@@ -21,28 +21,49 @@ public class YahooCommunicator {
 	private Functions mCaller = Functions.unknown;
 	private Cursor mCur;
 	private Dialog mSellDialog;
+	private boolean isRunning = false;
 	
 	public YahooCommunicator (Main main)
 	{
 		mService = main;
 	}
 	
-	public void getStockQuote (String symbolInput)
+	public boolean getStockQuote (String symbolInput)
 	{
+		if (isRunning)
+			return false;
+		isRunning = true;
 		getStocksAsync getStockTask = new getStocksAsync();
 		getStockTask.execute(symbolInput.replace(" ", ""));
 		mCaller = Functions.getStockQuote;
+		return true;
 		
 	}
 	
-	public void refreshOne (Cursor cur, Dialog sellDialog)
+	public boolean refreshOne (Cursor cur, Dialog sellDialog)
 	{
+		if (isRunning)
+			return false;
+		isRunning = true;
 		mCur = cur;
 		mSellDialog = sellDialog;
 		getStocksAsync refreshOneTask = new getStocksAsync();
 		refreshOneTask.execute(cur.getString(1));
 		mCaller = Functions.refreshOne;
+		return true;
 	}
+	
+	public boolean refreshAll (Cursor cur)
+	{
+		if (isRunning)
+			return false;
+		isRunning = true;
+		mCur = cur;
+		getStocksAsync refreshAllTask = new getStocksAsync();
+		refreshAllTask.execute (cur.getString(1));
+		mCaller = Functions.refreshAll;
+		return true;
+	}	
 	
 	/*
 	 * This sub class is to asynchronously get stock data for GetStock Module
@@ -57,28 +78,28 @@ public class YahooCommunicator {
 			
 			
 			try {
-					// getting info from Yahoo Finance API [meat of the program]
-					url = new URL(
-							"http://download.finance.yahoo.com/d/quotes.csv?s="
-									+ symbolInput[0] + ".to" +"&f=sl1p2n");
-					
-					//!!!!!!added .to TSX stocks only!!!!!!!!!!!//
-					
-					/*
-					 * s = stock symbol
-					 * l1 = last trade (price only)
-					 * p2 = change in percent
-					 * n = name of company
-					 */
+				// getting info from Yahoo Finance API [meat of the program]
+				url = new URL(
+						"http://download.finance.yahoo.com/d/quotes.csv?s="
+								+ symbolInput[0] + ".to" +"&f=sl1p2n");
+				
+				//!!!!!!added .to TSX stocks only!!!!!!!!!!!//
+				
+				/*
+				 * s = stock symbol
+				 * l1 = last trade (price only)
+				 * p2 = change in percent
+				 * n = name of company
+				 */
 
-					InputStream stream = url.openStream();
-					
-					//convert stream to string
-					//reason to use bufferedReader is so there are more functions to use: readLine()
-					BufferedReader r = new BufferedReader(new InputStreamReader(stream));
-					
-					
-					stockTxt = r.readLine();
+				InputStream stream = url.openStream();
+				
+				//convert stream to string
+				//reason to use bufferedReader is so there are more functions to use: readLine()
+				BufferedReader r = new BufferedReader(new InputStreamReader(stream));
+				
+				
+				stockTxt = r.readLine();
 
 			} catch (MalformedURLException e) {
 				// TODO Auto-generated catch block
@@ -94,17 +115,22 @@ public class YahooCommunicator {
 
 
 		protected void onPostExecute(String stockTxt) {
-			Log.i(TAG, stockTxt);
-			
+			Log.d(TAG, stockTxt);
+			isRunning = false;
 			switch (mCaller) {
 			case getStockQuote:
 				mService.getQuoteButtonAftermath(stockTxt);
 				break;
 				
 			case refreshOne:
-				mService.refreshOneStockAftermath(stockTxt, mCur, mSellDialog);
+				mService.refreshOneAftermath(stockTxt, mCur, mSellDialog);
+				break;
+			
+			case refreshAll:
+				mService.refreshALLAftermath(stockTxt, mCur);
 				break;
 			}
+
 		}	
 	}
 		
