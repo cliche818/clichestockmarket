@@ -108,6 +108,7 @@ public class Main extends ListActivity implements OnClickListener {
 	//class variable
 	BigDecimal bankAccountBigDecimal;
 	BigDecimal assetAccountBigDecimal;
+	BigDecimal newAssetTotalBigDecimal;
 	
 	/*
 	 * This method is the startup method, all buttons are created and linked here
@@ -842,7 +843,11 @@ public class Main extends ListActivity implements OnClickListener {
 		//refreshTask.execute();
 		Cursor cur = sDbHelper.fetchAllStocks();
 		if (cur.moveToFirst())
+		{
+			//always set this global counting variable to 0
+			newAssetTotalBigDecimal = new BigDecimal ("0.0");
 			mYahooCommunicator.refreshAll(cur);
+		}
 		
 		
 	}
@@ -858,7 +863,17 @@ public class Main extends ListActivity implements OnClickListener {
 			return;
 		}
 		
+		
 		String[] tokens = stockTxt.split(",");
+		
+		//keep a new asset total so it can be update when refresh finishes
+		//operation to change the user's bank account (buying)
+		BigDecimal stockQuoteBigDecimal = new BigDecimal (tokens[1]);
+		BigDecimal noOfStocksBigDecimal = new BigDecimal (cur.getString(4));
+				
+		stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noOfStocksBigDecimal);
+		newAssetTotalBigDecimal = newAssetTotalBigDecimal.add(stockQuoteBigDecimal);
+		
 		//since I know new stock quote is the 2nd token
 		sDbHelper.updateStock(cur.getInt(0), cur.getString(1), tokens[1], cur.getString(3), cur.getString(4));
 		
@@ -872,6 +887,14 @@ public class Main extends ListActivity implements OnClickListener {
 		refreshSimulation.setText("Refresh");
 		refreshSimulation.setEnabled(true);
 		cur.close();
+		
+		
+		//actually updating the asset number
+		SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
+		SharedPreferences.Editor editor = userAccount.edit();
+		
+		editor.putString ("assetAccount", newAssetTotalBigDecimal.toString());
+		assetAccountOut.setText("Assets: " + currencyFormat(newAssetTotalBigDecimal));
 		
 		//set the time for when it was updated
 		updateOut.setText("Updated at: " + dateFormat.format(new Date()) );
