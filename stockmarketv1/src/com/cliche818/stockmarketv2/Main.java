@@ -412,7 +412,7 @@ public class Main extends ListActivity implements OnClickListener {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		boolean result = super.onCreateOptionsMenu(menu);
-		menu.add(0, HELP_ID, 0, R.string.menu_insert);
+		//menu.add(0, HELP_ID, 0, R.string.menu_insert);
 		menu.add(1, ABOUT_ID, 1, R.string.menu_insert2);
 		return result;
 	}
