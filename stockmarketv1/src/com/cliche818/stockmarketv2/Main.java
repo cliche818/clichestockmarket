@@ -900,6 +900,7 @@ public class Main extends ListActivity implements OnClickListener {
 		SharedPreferences.Editor editor = userAccount.edit();
 		
 		editor.putString ("assetAccount", newAssetTotalBigDecimal.toString());
+		editor.commit();
 		assetAccountOut.setText("Assets: " + currencyFormat(newAssetTotalBigDecimal));
 		
 		//set the time for when it was updated
