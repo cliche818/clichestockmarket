@@ -8,7 +8,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -64,6 +66,15 @@ public class YahooCommunicator {
 		mCaller = Functions.refreshAll;
 		return true;
 	}	
+	
+	
+	public void moreInfo (Cursor cur)
+	{
+		Uri uri = Uri.parse ("http://ca.finance.yahoo.com/q?s=" + cur.getString (1) + ".to&ql=1");
+    	Intent intent = new Intent (Intent.ACTION_VIEW, uri);
+    	mService.startActivity (intent);
+    	cur.close();
+	}
 	
 	/*
 	 * This sub class is to asynchronously get stock data for GetStock Module

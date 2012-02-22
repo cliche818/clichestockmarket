@@ -81,6 +81,7 @@ public class Main extends ListActivity implements OnClickListener {
 	private static final int HELP_ID = Menu.FIRST;
 	private static final int ABOUT_ID = 2;
 	private static final int DELETE_ID = 3;
+	private static final int MOREINFO_ID = 4;
 	
 	//CONSTANTS
 	private static final String NOTVALIDSTOCKPRICE = "0.00";
@@ -244,6 +245,7 @@ public class Main extends ListActivity implements OnClickListener {
             menu.setHeaderTitle(selectedStock.getText());
             
             menu.add(0, DELETE_ID, 0, R.string.menu_delete);
+            menu.add(0, MOREINFO_ID, 0, R.string.menu_moreinfo);
         }
     }
 
@@ -252,11 +254,12 @@ public class Main extends ListActivity implements OnClickListener {
      */
     @Override
     public boolean onContextItemSelected(final MenuItem item) {
+    	
+    	final AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+    	final Cursor cur = sDbHelper.fetchStock(info.id);
+    	
         switch(item.getItemId()) {
             case DELETE_ID:
-            	
-            	final AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-            	final Cursor cur = sDbHelper.fetchStock(info.id);
             	
             	final Dialog sellDialog = new Dialog(Main.this);
             	sellDialog.setContentView (R.layout.sellpage);
@@ -393,6 +396,9 @@ public class Main extends ListActivity implements OnClickListener {
 						}
 					}
 				});
+            	
+            case MOREINFO_ID:
+            	mYahooCommunicator.moreInfo(cur);
             	
 
         }

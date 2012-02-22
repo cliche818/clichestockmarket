@@ -5,4 +5,5 @@
     <string name="menu_insert">Help</string>
     <string name="menu_insert2">About</string>
     <string name="menu_delete">Sell Stock</string>
+    <string name="menu_moreinfo">More Info</string>
 </resources>
