@@ -396,10 +396,11 @@ public class Main extends ListActivity implements OnClickListener {
 						}
 					}
 				});
+            	break;
             	
             case MOREINFO_ID:
             	mYahooCommunicator.moreInfo(cur);
-            	
+            	break;
 
         }
         return super.onContextItemSelected(item);
