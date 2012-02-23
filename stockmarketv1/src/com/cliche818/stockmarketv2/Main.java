@@ -287,7 +287,7 @@ public class Main extends ListActivity implements OnClickListener {
 		                    //before deleting stock, it must first be "sold"
 		                    //operations to change the user's bankAccount information
 		                    //Cursor cur = sDbHelper.fetchStock(info.id);
-		        			BigDecimal stockQuoteBigDecimal = new BigDecimal (cur.getString(3));
+		        			BigDecimal stockQuoteBigDecimal = new BigDecimal (cur.getString(2));
 		        			BigDecimal noOfStocksBigDecimal = new BigDecimal (cur.getString(4));
 		        			
 		        			stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noOfStocksBigDecimal);
@@ -330,7 +330,7 @@ public class Main extends ListActivity implements OnClickListener {
 		                    //operations to change the user's bankAccount information
 							
 		                    
-		        			BigDecimal stockQuoteBigDecimal = new BigDecimal (cur.getString(3));
+		        			BigDecimal stockQuoteBigDecimal = new BigDecimal (cur.getString(2));
 		        			BigDecimal noOfStocksBigDecimal = new BigDecimal (cur.getString(4));
 		        			
 		        			BigDecimal noToSellBigDecimal = new BigDecimal (noToSellString);
