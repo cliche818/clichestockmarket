@@ -849,12 +849,22 @@ public class Main extends ListActivity implements OnClickListener {
 		refreshSimulation.setEnabled(false);
 		//refreshTask.execute();
 		Cursor cur = sDbHelper.fetchAllStocks();
-		if (cur.moveToFirst())
+		
+		if (cur.isAfterLast())
+		{
+			refreshSimulation.setText("Refresh");
+			refreshSimulation.setEnabled(true);
+			return;
+		}		
+		else if (cur.moveToFirst())
 		{
 			//always set this global counting variable to 0
 			newAssetTotalBigDecimal = new BigDecimal ("0.0");
 			mYahooCommunicator.refreshAll(cur);
+			return;
 		}
+		
+		
 		
 		
 	}
