@@ -258,6 +258,10 @@ public class Main extends ListActivity implements OnClickListener {
     	final AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
     	final Cursor cur = sDbHelper.fetchStock(info.id);
     	
+    	//forgot to set our "global/stored" bank account string, bug fix
+		final SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
+		final SharedPreferences.Editor editor = userAccount.edit();
+    	
         switch(item.getItemId()) {
             case DELETE_ID:
             	
@@ -279,6 +283,9 @@ public class Main extends ListActivity implements OnClickListener {
             		sellDialog.dismiss();
             	}	
             	
+            	//refresh assetAccount first or it will go negative
+            	assetAccountBigDecimal = new BigDecimal (userAccount.getString("assetAccount", "0.0"));
+            	
             	sellAllButton.setOnClickListener (new View.OnClickListener (){
         			@Override
         				public void onClick (View v){
@@ -293,10 +300,6 @@ public class Main extends ListActivity implements OnClickListener {
 		        			stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noOfStocksBigDecimal);
 		        			bankAccountBigDecimal = bankAccountBigDecimal.add(stockQuoteBigDecimal);
 		        			assetAccountBigDecimal = assetAccountBigDecimal.subtract(stockQuoteBigDecimal);
-		        			
-		        			//forgot to set our "global/stored" bank account string, bug fix
-		        			SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
-		        			SharedPreferences.Editor editor = userAccount.edit();
 		        			
 		        			editor.putString ("bankAccount", bankAccountBigDecimal.toString());
 		        			bankAccountOut.setText("Cash: " + currencyFormat(bankAccountBigDecimal));
@@ -351,10 +354,6 @@ public class Main extends ListActivity implements OnClickListener {
 			        			bankAccountBigDecimal = bankAccountBigDecimal.add(stockQuoteBigDecimal);
 			        			assetAccountBigDecimal = assetAccountBigDecimal.subtract(stockQuoteBigDecimal);
 			        			
-			        			//forgot to set our "global/stored" bank account string, bug fix
-			        			SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
-			        			SharedPreferences.Editor editor = userAccount.edit();
-			        			
 			        			editor.putString ("bankAccount", bankAccountBigDecimal.toString());
 			        			bankAccountOut.setText("Cash: " + currencyFormat(bankAccountBigDecimal));
 			        			
@@ -375,10 +374,6 @@ public class Main extends ListActivity implements OnClickListener {
 		        				stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noToSellBigDecimal);
 			        			bankAccountBigDecimal = bankAccountBigDecimal.add(stockQuoteBigDecimal);
 			        			assetAccountBigDecimal = assetAccountBigDecimal.subtract(stockQuoteBigDecimal);
-			        			
-			        			//forgot to set our "global/stored" bank account string, bug fix
-			        			SharedPreferences userAccount = getSharedPreferences(PREFS_NAME, 0);
-			        			SharedPreferences.Editor editor = userAccount.edit();
 			        			
 			        			editor.putString ("bankAccount", bankAccountBigDecimal.toString());
 			        			bankAccountOut.setText("Cash: " + currencyFormat(bankAccountBigDecimal));
@@ -919,7 +914,6 @@ public class Main extends ListActivity implements OnClickListener {
 	}
 	
 	public void refreshOneAftermath (String stockTxt, Cursor cur, Dialog sellDialog){
-		Log.d(TAG, stockTxt);
 		
 		//check if Internet cuts off and getting no data
 		if (stockTxt.length() == 0)
