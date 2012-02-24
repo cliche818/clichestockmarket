@@ -281,6 +281,7 @@ public class Main extends ListActivity implements OnClickListener {
             		mToast.showErrorMessage("Busy refreshing!");
             		cur.close();
             		sellDialog.dismiss();
+            		break;
             	}	
             	
             	//refresh assetAccount first or it will go negative
@@ -291,6 +292,11 @@ public class Main extends ListActivity implements OnClickListener {
         				public void onClick (View v){
 
 		                    
+		    				if (cur.isClosed())
+		    				{
+		    					return;
+		    				}
+        				
 		                    //before deleting stock, it must first be "sold"
 		                    //operations to change the user's bankAccount information
 		                    //Cursor cur = sDbHelper.fetchStock(info.id);
@@ -332,6 +338,10 @@ public class Main extends ListActivity implements OnClickListener {
 		                    //before deleting stock, it must first be "sold"
 		                    //operations to change the user's bankAccount information
 							
+							if (cur.isClosed())
+							{
+								return;
+							}
 		                    
 		        			BigDecimal stockQuoteBigDecimal = new BigDecimal (cur.getString(2));
 		        			BigDecimal noOfStocksBigDecimal = new BigDecimal (cur.getString(4));
@@ -387,6 +397,7 @@ public class Main extends ListActivity implements OnClickListener {
 		        				fillData();
 		        				cur.close();
 		        				sellDialog.dismiss();
+
 		        			}
 						}
 					}
@@ -926,6 +937,12 @@ public class Main extends ListActivity implements OnClickListener {
 		
 		String[] tokens = stockTxt.split(",");
 		//since I know stock quote is the 2nd token
+		if (cur.isClosed())
+		{
+			return;
+		}
+		
+		
 		sDbHelper.updateStock(cur.getInt(0), cur.getString(1), tokens[1], cur.getString(3), cur.getString(4));
 		return;
 	}
