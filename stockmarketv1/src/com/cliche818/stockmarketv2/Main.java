@@ -25,10 +25,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
@@ -133,7 +135,10 @@ public class Main extends ListActivity implements OnClickListener {
 		
 		// connect reference variables with our view objects
 		setSymbol = (EditText) findViewById(R.id.setSymbol);
+		setSymbol.setOnEditorActionListener(mGetQuoteListener);
+		
 		setNoOfStocks = (EditText) findViewById(R.id.setNoOfStocks);
+		setNoOfStocks.setOnEditorActionListener(mInsertSimulationListener);
 		setNoOfStocks.setEnabled(false);
 		
 		companyNameOut = (TextView) findViewById(R.id.companyNameOutput);
@@ -676,7 +681,28 @@ public class Main extends ListActivity implements OnClickListener {
 		adapter = new SimpleCursorAdapter(this,	R.layout.portfolio_item, dbCursor, new String[] {"Ticker"},	new int[] {R.id.pfliTicker});
 		portfolio.setAdapter(adapter);
 	}
-
+	
+	private TextView.OnEditorActionListener mGetQuoteListener =
+		new TextView.OnEditorActionListener () {
+		public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+			if (actionId == EditorInfo.IME_ACTION_GO){
+				getQuoteButtonOnClick();
+			}
+			Log.d(TAG, "Going into GetStockOnClickListener now");
+			return true;
+		}
+	};
+	
+	private TextView.OnEditorActionListener mInsertSimulationListener =
+		new TextView.OnEditorActionListener() {	
+		public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+			if (actionId == EditorInfo.IME_ACTION_GO){
+				insertSimulationOnClick();
+			}
+			return true;
+		}
+	};
+	
 	/*
 	 * This method is a switch statement to listen for what button was clicked and call its corresponding method
 	 * @param v the view that the button was pressed in
