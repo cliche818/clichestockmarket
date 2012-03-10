@@ -1,5 +1,5 @@
 package com.cliche818.stockmarketv2;
-// test commit 
+
 import android.content.Context;
 import android.widget.Toast;
 
