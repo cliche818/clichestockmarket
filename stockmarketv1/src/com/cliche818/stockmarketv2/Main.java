@@ -538,10 +538,18 @@ public class Main extends ListActivity implements OnClickListener {
 	private int createStock(String noOfStocksString){
 
 		//operation to change the user's bank account (buying)
+		
+		if (stockQuote.equals("Stock Quote: N/A"))
+		{
+			mToast.showErrorMessage("Unable to add invalid stock.");
+				return -1;
+		}
+			
 		BigDecimal stockQuoteBigDecimal = new BigDecimal (stockQuote);
 		BigDecimal noOfStocksBigDecimal = new BigDecimal (noOfStocksString);
 		
 		stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noOfStocksBigDecimal);
+		
 		
 		
 		//check if there the user has enough cash....don't want cash account to go below 0
