@@ -276,11 +276,20 @@ public class Main extends ListActivity implements OnClickListener {
             	sellDialog.setCancelable(true);
             	sellDialog.show();
             	
-            	Button sellButton = (Button) sellDialog.findViewById(R.id.sell);
-            	Button sellAllButton = (Button) sellDialog.findViewById(R.id.sellAll);
+            	Button sellButton = (Button) sellDialog.findViewById(R.id.sell_button);
+            	Button sellAllButton = (Button) sellDialog.findViewById(R.id.sellall_button);
+
             	final EditText noToSellInput = (EditText) sellDialog.findViewById(R.id.noToSell);
-            	
-            	//before even giving the ability to sell (the stock MUST be updated)
+               	noToSellInput.setOnEditorActionListener(new TextView.OnEditorActionListener() {	
+            		public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+            			if (actionId == EditorInfo.IME_ACTION_GO){
+            				sellButtonOnClickContinue(noToSellInput, cur, editor, info, sellDialog);
+            			}
+            			return true;
+            		}
+               	}
+            	);
+               	    	//before even giving the ability to sell (the stock MUST be updated)
             	if (!mYahooCommunicator.refreshOne (cur, sellDialog) )
             	{
             		mToast.showErrorMessage("Busy refreshing!");
@@ -292,119 +301,18 @@ public class Main extends ListActivity implements OnClickListener {
             	//refresh assetAccount first or it will go negative
             	assetAccountBigDecimal = new BigDecimal (userAccount.getString("assetAccount", "0.0"));
             	
+            	
             	sellAllButton.setOnClickListener (new View.OnClickListener (){
         			@Override
         				public void onClick (View v){
-
-		                    
-		    				if (cur.isClosed())
-		    				{
-		    					return;
-		    				}
-        				
-		                    //before deleting stock, it must first be "sold"
-		                    //operations to change the user's bankAccount information
-		                    //Cursor cur = sDbHelper.fetchStock(info.id);
-		        			BigDecimal stockQuoteBigDecimal = new BigDecimal (cur.getString(2));
-		        			BigDecimal noOfStocksBigDecimal = new BigDecimal (cur.getString(4));
-		        			
-		        			stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noOfStocksBigDecimal);
-		        			bankAccountBigDecimal = bankAccountBigDecimal.add(stockQuoteBigDecimal);
-		        			assetAccountBigDecimal = assetAccountBigDecimal.subtract(stockQuoteBigDecimal);
-		        			
-		        			editor.putString ("bankAccount", bankAccountBigDecimal.toString());
-		        			bankAccountOut.setText("Cash: " + currencyFormat(bankAccountBigDecimal));
-		        			
-		        			editor.putString ("assetAccount", assetAccountBigDecimal.toString());
-		        			assetAccountOut.setText("Assets: " + currencyFormat(assetAccountBigDecimal));
-		        			
-		                    editor.commit();
-		        			
-		                    sDbHelper.deleteStock(info.id);
-		                    fillData();
-		                    cur.close();
-		                    sellDialog.dismiss();
+        				sellAllButtonOnClickContinue (cur, editor, info, sellDialog);
         			}
         			});
             	
-            	sellButton.setOnClickListener(new View.OnClickListener() {
-					
+            	sellButton.setOnClickListener(new View.OnClickListener() {		
 					@Override
-					public void onClick(View v) {
-						
-	                    
-						String noToSellString = noToSellInput.getText().toString();
-						
-						if (noToSellString.length() == 0) {
-							mToast.showErrorMessage("A number is required to continue");
-	        			}	
-						
-						else {
-		                    //before deleting stock, it must first be "sold"
-		                    //operations to change the user's bankAccount information
-							
-							if (cur.isClosed())
-							{
-								return;
-							}
-		                    
-		        			BigDecimal stockQuoteBigDecimal = new BigDecimal (cur.getString(2));
-		        			BigDecimal noOfStocksBigDecimal = new BigDecimal (cur.getString(4));
-		        			
-		        			BigDecimal noToSellBigDecimal = new BigDecimal (noToSellString);
-		        			BigDecimal remainingStocksBigDecimal = noOfStocksBigDecimal.subtract(noToSellBigDecimal);
-		        			
-		        			
-		        			
-		        			//user entered an invalid number (more shares than what he/she has)
-		        			if (remainingStocksBigDecimal.compareTo(ZERO) == -1)
-		        			{
-		        				mToast.showErrorMessage("An invalid number was entered!");
-		        			}
-		        			
-		        			//user wants to sell ALL
-		        			else if (remainingStocksBigDecimal.compareTo(ZERO) == 0)
-		        			{
-		        				stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noOfStocksBigDecimal);
-			        			bankAccountBigDecimal = bankAccountBigDecimal.add(stockQuoteBigDecimal);
-			        			assetAccountBigDecimal = assetAccountBigDecimal.subtract(stockQuoteBigDecimal);
-			        			
-			        			editor.putString ("bankAccount", bankAccountBigDecimal.toString());
-			        			bankAccountOut.setText("Cash: " + currencyFormat(bankAccountBigDecimal));
-			        			
-			        			editor.putString ("assetAccount", assetAccountBigDecimal.toString());
-			        			assetAccountOut.setText("Assets: " + currencyFormat(assetAccountBigDecimal));
-			        			
-			                    editor.commit();
-			        			
-			                    sDbHelper.deleteStock(info.id);
-			                    fillData();
-			                    cur.close();
-			                    sellDialog.dismiss();
-		        			}
-		        			
-		        			//user wants to sell SOME
-		        			else
-		        			{
-		        				stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noToSellBigDecimal);
-			        			bankAccountBigDecimal = bankAccountBigDecimal.add(stockQuoteBigDecimal);
-			        			assetAccountBigDecimal = assetAccountBigDecimal.subtract(stockQuoteBigDecimal);
-			        			
-			        			editor.putString ("bankAccount", bankAccountBigDecimal.toString());
-			        			bankAccountOut.setText("Cash: " + currencyFormat(bankAccountBigDecimal));
-			        			editor.putString ("assetAccount", assetAccountBigDecimal.toString());
-			        			assetAccountOut.setText("Assets: " + currencyFormat(assetAccountBigDecimal));
-			        			
-			                    editor.commit();
-		        				
-		        				
-		        				sDbHelper.updateStock(cur.getInt(0), cur.getString(1), cur.getString(2), cur.getString(3), remainingStocksBigDecimal.toString());
-		        				fillData();
-		        				cur.close();
-		        				sellDialog.dismiss();
-
-		        			}
-						}
+					public void onClick(View v) {			
+						sellButtonOnClickContinue(noToSellInput, cur, editor, info, sellDialog);						
 					}
 				});
             	break;
@@ -732,7 +640,6 @@ public class Main extends ListActivity implements OnClickListener {
 		case R.id.save_to_portfolio_button:
 			saveToPortfolioOnClick();
 			break;
-
 		
 		}
 	}
@@ -858,6 +765,41 @@ public class Main extends ListActivity implements OnClickListener {
 	}
 	
 	/*
+	 * This method is linked to the sell all button in simulation screen
+	 * will sell ALL stocks
+	 */
+	public void sellAllOnClick(Cursor cur, AdapterContextMenuInfo info, SharedPreferences.Editor editor, Dialog sellDialog){
+		if (cur.isClosed())
+		{
+			return;
+		}
+	
+        //before deleting stock, it must first be "sold"
+        //operations to change the user's bankAccount information
+        //Cursor cur = sDbHelper.fetchStock(info.id);
+		BigDecimal stockQuoteBigDecimal = new BigDecimal (cur.getString(2));
+		BigDecimal noOfStocksBigDecimal = new BigDecimal (cur.getString(4));
+		
+		stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noOfStocksBigDecimal);
+		bankAccountBigDecimal = bankAccountBigDecimal.add(stockQuoteBigDecimal);
+		assetAccountBigDecimal = assetAccountBigDecimal.subtract(stockQuoteBigDecimal);
+		
+		editor.putString ("bankAccount", bankAccountBigDecimal.toString());
+		bankAccountOut.setText("Cash: " + currencyFormat(bankAccountBigDecimal));
+		
+		editor.putString ("assetAccount", assetAccountBigDecimal.toString());
+		assetAccountOut.setText("Assets: " + currencyFormat(assetAccountBigDecimal));
+		
+        editor.commit();
+		
+        sDbHelper.deleteStock(info.id);
+        fillData();
+        cur.close();
+        sellDialog.dismiss();
+	}
+	
+	
+	/*
 	 * This method is linked to the Buy button
 	 * Inserts (buys) the stock that is seen in the Stock Quote page
 	 */
@@ -980,6 +922,119 @@ public class Main extends ListActivity implements OnClickListener {
 		sDbHelper.updateStock(cur.getInt(0), cur.getString(1), tokens[1], cur.getString(3), cur.getString(4));
 		return;
 	}
+	
+	public void sellAllButtonOnClickContinue (Cursor cur, SharedPreferences.Editor editor, AdapterContextMenuInfo info, Dialog sellDialog){
+		if (cur.isClosed())
+		{
+			return;
+		}
+	
+        //before deleting stock, it must first be "sold"
+        //operations to change the user's bankAccount information
+        //Cursor cur = sDbHelper.fetchStock(info.id);
+		BigDecimal stockQuoteBigDecimal = new BigDecimal (cur.getString(2));
+		BigDecimal noOfStocksBigDecimal = new BigDecimal (cur.getString(4));
+		
+		stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noOfStocksBigDecimal);
+		bankAccountBigDecimal = bankAccountBigDecimal.add(stockQuoteBigDecimal);
+		assetAccountBigDecimal = assetAccountBigDecimal.subtract(stockQuoteBigDecimal);
+		
+		editor.putString ("bankAccount", bankAccountBigDecimal.toString());
+		bankAccountOut.setText("Cash: " + currencyFormat(bankAccountBigDecimal));
+		
+		editor.putString ("assetAccount", assetAccountBigDecimal.toString());
+		assetAccountOut.setText("Assets: " + currencyFormat(assetAccountBigDecimal));
+		
+        editor.commit();
+		
+        sDbHelper.deleteStock(info.id);
+        fillData();
+        cur.close();
+        sellDialog.dismiss();
+	
+	}
+	
+	/*
+	 * This method is associated with the sell button on the simulation mode
+	 * Used to sell a number of stocks
+	 * It's required to be a method as EditText's action listener needs to do the same thing when enter is pressed
+	 */
+	public void sellButtonOnClickContinue(EditText noToSellInput, Cursor cur, SharedPreferences.Editor editor, AdapterContextMenuInfo info, Dialog sellDialog){
+		
+		String noToSellString = noToSellInput.getText().toString();
+		
+		if (noToSellString.length() == 0) {
+			mToast.showErrorMessage("A number is required to continue");
+		}	
+		
+		else {
+            //before deleting stock, it must first be "sold"
+            //operations to change the user's bankAccount information
+			
+			if (cur.isClosed())
+			{
+				return;
+			}
+            
+			BigDecimal stockQuoteBigDecimal = new BigDecimal (cur.getString(2));
+			BigDecimal noOfStocksBigDecimal = new BigDecimal (cur.getString(4));
+			
+			BigDecimal noToSellBigDecimal = new BigDecimal (noToSellString);
+			BigDecimal remainingStocksBigDecimal = noOfStocksBigDecimal.subtract(noToSellBigDecimal);
+			
+			
+			
+			//user entered an invalid number (more shares than what he/she has)
+			if (remainingStocksBigDecimal.compareTo(ZERO) == -1)
+			{
+				mToast.showErrorMessage("An invalid number was entered!");
+			}
+			
+			//user wants to sell ALL
+			else if (remainingStocksBigDecimal.compareTo(ZERO) == 0)
+			{
+				stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noOfStocksBigDecimal);
+    			bankAccountBigDecimal = bankAccountBigDecimal.add(stockQuoteBigDecimal);
+    			assetAccountBigDecimal = assetAccountBigDecimal.subtract(stockQuoteBigDecimal);
+    			
+    			editor.putString ("bankAccount", bankAccountBigDecimal.toString());
+    			bankAccountOut.setText("Cash: " + currencyFormat(bankAccountBigDecimal));
+    			
+    			editor.putString ("assetAccount", assetAccountBigDecimal.toString());
+    			assetAccountOut.setText("Assets: " + currencyFormat(assetAccountBigDecimal));
+    			
+                editor.commit();
+    			
+                sDbHelper.deleteStock(info.id);
+                fillData();
+                cur.close();
+                sellDialog.dismiss();
+			}
+			
+			//user wants to sell SOME
+			else
+			{
+				stockQuoteBigDecimal = stockQuoteBigDecimal.multiply(noToSellBigDecimal);
+    			bankAccountBigDecimal = bankAccountBigDecimal.add(stockQuoteBigDecimal);
+    			assetAccountBigDecimal = assetAccountBigDecimal.subtract(stockQuoteBigDecimal);
+    			
+    			editor.putString ("bankAccount", bankAccountBigDecimal.toString());
+    			bankAccountOut.setText("Cash: " + currencyFormat(bankAccountBigDecimal));
+    			editor.putString ("assetAccount", assetAccountBigDecimal.toString());
+    			assetAccountOut.setText("Assets: " + currencyFormat(assetAccountBigDecimal));
+    			
+                editor.commit();
+				
+				
+				sDbHelper.updateStock(cur.getInt(0), cur.getString(1), cur.getString(2), cur.getString(3), remainingStocksBigDecimal.toString());
+				fillData();
+				cur.close();
+				sellDialog.dismiss();
+
+			}
+		}
+	}
+	
 	
 	/*
 	 * Global Toast used to display error messages

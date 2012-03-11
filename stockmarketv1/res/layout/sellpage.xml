@@ -30,14 +30,14 @@
 			android:layout_width="wrap_content" 
 	      	android:layout_height= "fill_parent"
 	      	android:text="Sell"
-	      	android:id="@+id/sell">
+	      	android:id="@+id/sell_button">
 		</Button>
 		
 		<Button
 			android:layout_width="wrap_content" 
 	      	android:layout_height= "fill_parent"
 	      	android:text="Sell All"
-	      	android:id="@+id/sellAll"
+	      	android:id="@+id/sellall_button"
 	      	android:layout_alignParentRight="True">
 		</Button>
 	</RelativeLayout>
