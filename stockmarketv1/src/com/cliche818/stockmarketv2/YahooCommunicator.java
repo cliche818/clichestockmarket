@@ -36,7 +36,10 @@ public class YahooCommunicator {
 			return false;
 		isRunning = true;
 		getStocksAsync getStockTask = new getStocksAsync();
-		getStockTask.execute(symbolInput.replace(" ", ""));
+		
+		//parsing string such as removing spaces and name of the company from auto complete
+		String[]  symbolInputClean = symbolInput.split(" = ");
+		getStockTask.execute(symbolInputClean[0].replace(" ", ""));
 		mCaller = Functions.getStockQuote;
 		return true;
 		

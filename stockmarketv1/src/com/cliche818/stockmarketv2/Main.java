@@ -34,6 +34,8 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -53,6 +55,8 @@ public class Main extends ListActivity implements OnClickListener {
 	
 	// input variables
 	EditText setSymbol;
+	AutoCompleteTextView setSymbolAuto;
+	
 	EditText setNoOfStocks;
 
 	// output variables
@@ -134,8 +138,15 @@ public class Main extends ListActivity implements OnClickListener {
 		mYahooCommunicator = new YahooCommunicator(this);
 		
 		// connect reference variables with our view objects
-		setSymbol = (EditText) findViewById(R.id.setSymbol);
-		setSymbol.setOnEditorActionListener(mGetQuoteListener);
+		/*setSymbol = (EditText) findViewById(R.id.setSymbol);
+		setSymbol.setOnEditorActionListener(mGetQuoteListener);*/
+		
+		setSymbolAuto = (AutoCompleteTextView) findViewById (R.id.setSymbolAuto);
+		String[] symbols = getResources().getStringArray(R.array.symbol_array);
+		ArrayAdapter<String> symbolAdapter = new ArrayAdapter<String> (this, android.R.layout.simple_dropdown_item_1line, symbols);
+		setSymbolAuto.setAdapter(symbolAdapter);
+		setSymbolAuto.setThreshold(0);
+		setSymbolAuto.setOnEditorActionListener(mGetQuoteListener);
 		
 		setNoOfStocks = (EditText) findViewById(R.id.setNoOfStocks);
 		setNoOfStocks.setOnEditorActionListener(mInsertSimulationListener);
@@ -533,7 +544,7 @@ public class Main extends ListActivity implements OnClickListener {
 	 */
 	public void hideKeyboard () {
 		InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-		imm.hideSoftInputFromWindow(setSymbol.getWindowToken(), 0);
+		imm.hideSoftInputFromWindow(setSymbolAuto.getWindowToken(), 0);
 	}
 	
 	// PORTFOLIO FUNCTIONS
@@ -603,6 +614,7 @@ public class Main extends ListActivity implements OnClickListener {
 		public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 			if (actionId == EditorInfo.IME_ACTION_GO){
 				getQuoteButtonOnClick();
+				v.setText("");
 			}
 			Log.d(TAG, "Going into GetStockOnClickListener now");
 			return true;
@@ -659,7 +671,7 @@ public class Main extends ListActivity implements OnClickListener {
 		//being diligent in checking for Internet every time
 		isInternet();
 		
-		String symbolInput = setSymbol.getText().toString();
+		String symbolInput = setSymbolAuto.getText().toString();
 		
 		if (symbolInput.length() == 0) {
 			mToast.showErrorMessage("A stock symbol is required to continue");
@@ -742,7 +754,7 @@ public class Main extends ListActivity implements OnClickListener {
 		}
 
 		// Keeping ticker value
-		lastTicker = setSymbol.getText().toString() ;
+		lastTicker = setSymbolAuto.getText().toString() ;
 		
 		// Show save to portfolio button
 		if (existInDB(lastTicker)) {

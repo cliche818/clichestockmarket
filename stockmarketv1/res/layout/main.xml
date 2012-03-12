@@ -24,29 +24,27 @@
     		android:layout_height="wrap_content">
 
 		    
-			<LinearLayout 
-			    android:id="@+id/rl1"
-				android:orientation="horizontal"
-    			android:layout_width="fill_parent"
-    			android:layout_height="wrap_content">
-		   		<EditText 
-		   			android:layout_width="wrap_content" 
+		    <AutoCompleteTextView 
+		   		    android:layout_width="fill_parent" 
 		   			android:layout_height="wrap_content" 
-		   			android:id="@+id/setSymbol"
+		   			android:id="@+id/setSymbolAuto"
 		   			android:hint="Enter Stock Symbol"
 		   			android:imeOptions="actionGo"
 		   			android:singleLine="True">
-		   		</EditText>
+		   	</AutoCompleteTextView>
+		    
 		   
-		   		<Button 
-		   			android:text="Get Stock Price" 
-		   			android:id="@+id/get_quote_button" 
-		   			android:layout_width="wrap_content" 
-		   			android:layout_height="match_parent">
-		   		</Button>
+		   		
+		   		
+	   		<Button 
+	   			android:text="Get Stock Quote" 
+	   			android:id="@+id/get_quote_button" 
+	   			android:layout_width="wrap_content" 
+	   			android:layout_height="match_parent">
+	   		</Button>
 		   
 
-    		</LinearLayout>
+
     		
 			<TextView 
     			android:text="Company Name: " 
