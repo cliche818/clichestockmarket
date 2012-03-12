@@ -54,9 +54,7 @@ public class Main extends ListActivity implements OnClickListener {
 	private static final String TAG = "stockmarketv2";
 	
 	// input variables
-	EditText setSymbol;
 	AutoCompleteTextView setSymbolAuto;
-	
 	EditText setNoOfStocks;
 
 	// output variables
@@ -138,8 +136,6 @@ public class Main extends ListActivity implements OnClickListener {
 		mYahooCommunicator = new YahooCommunicator(this);
 		
 		// connect reference variables with our view objects
-		/*setSymbol = (EditText) findViewById(R.id.setSymbol);
-		setSymbol.setOnEditorActionListener(mGetQuoteListener);*/
 		
 		setSymbolAuto = (AutoCompleteTextView) findViewById (R.id.setSymbolAuto);
 		String[] symbols = getResources().getStringArray(R.array.symbol_array);
@@ -672,6 +668,7 @@ public class Main extends ListActivity implements OnClickListener {
 		isInternet();
 		
 		String symbolInput = setSymbolAuto.getText().toString();
+		setSymbolAuto.setText("");
 		
 		if (symbolInput.length() == 0) {
 			mToast.showErrorMessage("A stock symbol is required to continue");
@@ -819,6 +816,7 @@ public class Main extends ListActivity implements OnClickListener {
 		hideKeyboard();
 		
 		String noOfStocksString = setNoOfStocks.getText().toString();
+		setNoOfStocks.setText("");
 		
 		//check that a number is indeed entered
 		if (noOfStocksString.length() == 0) {
