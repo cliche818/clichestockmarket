@@ -8,11 +8,24 @@
   		android:padding="5dp" >
   		
   		<TextView 
+  		    android:id="@+id/pfliID"
+  		    android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+  		<TextView 
   		    android:id="@+id/pfliTicker"
   		    android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
   		<TextView 
   		    android:id="@+id/pfliName"
+  		    android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+  		<TextView 
+  		    android:id="@+id/pfliPrice"
+  		    android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+  		<TextView 
+  		    android:id="@+id/pfliChange"
   		    android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
   		<Button

@@ -118,6 +118,14 @@
 	   		android:layout_height="fill_parent"
 	   		android:padding="5dp" >
 	   		
+	   		<Button
+	   		    android:text="Refresh"
+	   		    android:id="@+id/refresh_portfolio_button"
+	   			android:layout_width="wrap_content" 
+	   			android:layout_height="wrap_content"
+	   			android:onClick="portfolioRefreshData">
+	   		</Button>
+	   		
 	   		<ListView 
 	   		    android:id="@+id/pfList"
 	   		    android:layout_width="fill_parent"

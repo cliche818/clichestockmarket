@@ -14,9 +14,11 @@ public class SQLiteExpandedHelper extends SQLiteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		// Creating database layout
-		String query = "CREATE TABLE IF NOT EXISTS portfolio (_id INTEGER PRIMARY KEY AUTOINCREMENT, Ticker TEXT UNIQUE)" ;
+		String query = "CREATE TABLE IF NOT EXISTS portfolio (_id INTEGER PRIMARY KEY AUTOINCREMENT, Ticker TEXT UNIQUE, Price TEXT, Change TEXT, Name TEXT DEFAULT 0)" ;
 		db.execSQL(query) ;
 		query = "CREATE TABLE IF NOT EXISTS gamestats (_id INTEGER PRIMARY KEY AUTOINCREMENT, Field TEXT UNIQUE, Value REAL DEFAULT -1)" ;
+		db.execSQL(query) ;
+		query = "CREATE TABLE IF NOT EXISTS history (_id INTEGER PRIMARY KEY AUTOINCREMENT, Ticker TEXT UNIQUE, Price TEXT, Amount INTEGER DEFAULT 0, Direction TEXT, Created TEXT DEFAULT CURRENT_TIMESTAMP)" ;
 		db.execSQL(query) ;
 		
 		// Inserting default status values
@@ -25,10 +27,10 @@ public class SQLiteExpandedHelper extends SQLiteOpenHelper {
         values.put("Value", "0");
         db.insert("gamestats", "_id", values);
         values.put("Field", "FUNDS");
-        values.put("Value", "0");
+        values.put("Value", "100000.00");
         db.insert("gamestats", "_id", values);
         values.put("Field", "STARTFUNDS");
-        values.put("Value", "0");
+        values.put("Value", "100000.00");
         db.insert("gamestats", "_id", values);
         values.put("Field", "DAYSLEFT");
         values.put("Value", "-1");

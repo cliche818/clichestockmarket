@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/summary"
+  		android:orientation="vertical"
+  		android:layout_width="fill_parent"
+  		android:layout_height="fill_parent"
+  		android:padding="5dp" >
+  		
+  		<Button
+  		    android:text="Back to simulation"
+  		    android:id="@+id/summary_back"
+  			android:layout_width="wrap_content" 
+  			android:layout_height="wrap_content"
+  			android:onClick="summary_back">
+  		</Button>
+  		
+  		<TextView 
+  		    android:id="@+id/suTotal"
+  		    android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+  		<TextView 
+  		    android:id="@+id/suAverage"
+  		    android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+  		
+  		<ListView 
+  		    android:id="@+id/suHistory"
+  		    android:layout_width="fill_parent"
+              android:layout_height="fill_parent">
+       </ListView>
+       
+  		<Button
+  		    android:text="New game"
+  		    android:id="@+id/summary_new"
+  			android:layout_width="wrap_content" 
+  			android:layout_height="wrap_content"
+  			android:onClick="summary_new">
+  		</Button>
+  		
+</LinearLayout>

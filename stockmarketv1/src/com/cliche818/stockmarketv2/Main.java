@@ -70,6 +70,7 @@ public class Main extends ListActivity implements OnClickListener {
 	Button insertSimulation;
 	Button refreshSimulation;
 	Button saveToPortfolio ;
+	Button refreshPortfolio;
 	
 	//database variable
 	private StockDBAdapter sDbHelper;
@@ -159,6 +160,7 @@ public class Main extends ListActivity implements OnClickListener {
 
 		getQuote = (Button) findViewById(R.id.get_quote_button);
 		saveToPortfolio = (Button) findViewById(R.id.save_to_portfolio_button) ;
+		refreshPortfolio = (Button) findViewById(R.id.refresh_portfolio_button) ;
 		
 		insertSimulation = (Button) findViewById(R.id.insert_button);
 		insertSimulation.setEnabled(false);
@@ -232,9 +234,7 @@ public class Main extends ListActivity implements OnClickListener {
 		portfolio = (ListView) findViewById(R.id.pfList);
 		
 		// Prep the portfolio lists
-		dbCursor = db.rawQuery("SELECT * FROM portfolio WHERE 1=1", null);
-		adapter = new SimpleCursorAdapter(this,	R.layout.portfolio_item, dbCursor, new String[] {"Ticker"},	new int[] {R.id.pfliTicker});
-		portfolio.setAdapter(adapter);
+		portfolioRefreshData(null) ;
 		// ------------------------------------------- END PORTFOLIO STUFF -----------------------------------------------//
 	}
 	
@@ -565,9 +565,7 @@ public class Main extends ListActivity implements OnClickListener {
 	        values.put("Ticker", ticker);
 			if (-1 != db.insert("portfolio", "_id", values)) {
 				// update the portfolio page upon success
-				dbCursor = db.rawQuery("SELECT * FROM portfolio WHERE 1=1", null);
-				adapter = new SimpleCursorAdapter(this,	R.layout.portfolio_item, dbCursor, new String[] {"Ticker"},	new int[] {R.id.pfliTicker});
-				portfolio.setAdapter(adapter);
+				portfolioRefreshData(null) ;
 				return true ;
 			} else {
 				return false ;
@@ -586,7 +584,7 @@ public class Main extends ListActivity implements OnClickListener {
 		// get row layout object
 		LinearLayout row = (LinearLayout)v.getParent();
 		// get label from layout
-        TextView ticker = (TextView)row.getChildAt(0);
+        TextView ticker = (TextView)row.getChildAt(1);
         // da query
         if (db.delete("portfolio", "Ticker = \"" + ticker.getText().toString() + "\"", null) > 0) {
 			Toast dbInform = Toast.makeText(Main.this,
@@ -600,9 +598,8 @@ public class Main extends ListActivity implements OnClickListener {
 			dbError.show();
         }
         // reset layout so it actually shows
-		dbCursor = db.rawQuery("SELECT * FROM portfolio WHERE 1=1", null);
-		adapter = new SimpleCursorAdapter(this,	R.layout.portfolio_item, dbCursor, new String[] {"Ticker"},	new int[] {R.id.pfliTicker});
-		portfolio.setAdapter(adapter);
+        portfolioListViewRefresh() ;
+        
 	}
 	
 	private TextView.OnEditorActionListener mGetQuoteListener =
@@ -685,7 +682,7 @@ public class Main extends ListActivity implements OnClickListener {
 	
 	public void getQuoteButtonAftermath (String stockTxt){
 		
-		
+		lastTicker = "" ;
 		if (stockTxt == null)
 		{
 			mToast.showErrorMessage("Busy refreshing!");
@@ -747,21 +744,18 @@ public class Main extends ListActivity implements OnClickListener {
 			symbolOut.setText("Stock Symbol: " + stockSymbol);
 			priceOut.setText("Stock Quote: " + stockQuote);
 			changePercentageOut.setText("Percent Change: " + stockChangePercentage + "%");
-			
+			lastTicker = stockSymbol ;
+			// Show save to portfolio button
+			if (existInDB(lastTicker)) {
+				saveToPortfolio.setText("Already in portfolio") ;
+				saveToPortfolio.setClickable(false) ;
+			} else {
+				saveToPortfolio.setText("Save to Portfolio") ;
+				saveToPortfolio.setClickable(true) ;
+			}
+			saveToPortfolio.setVisibility(View.VISIBLE) ;	
 		}
-
-		// Keeping ticker value
-		lastTicker = setSymbolAuto.getText().toString() ;
 		
-		// Show save to portfolio button
-		if (existInDB(lastTicker)) {
-			saveToPortfolio.setText("Already in portfolio") ;
-			saveToPortfolio.setClickable(false) ;
-		} else {
-			saveToPortfolio.setText("Save to Portfolio") ;
-			saveToPortfolio.setClickable(true) ;
-		}
-		saveToPortfolio.setVisibility(View.VISIBLE) ;			
 		
 		//allow the user to get other stocks again
 		getQuote.setText("Get Stock Quote");
@@ -1078,6 +1072,140 @@ public class Main extends ListActivity implements OnClickListener {
 			saveToPortfolio.setText("Done") ;
 			saveToPortfolio.setClickable(false) ;
 		}
+	}
+	
+	public void portfolioRefreshData(View v) {
+		refreshPortfolio.setText("Refreshing");
+		refreshPortfolio.setEnabled(false);
+		Cursor dbCursor = db.rawQuery("SELECT _id, Ticker FROM portfolio WHERE 1=1", null);
+		startManagingCursor (dbCursor) ;
+		
+		if (!dbCursor.moveToFirst()) {
+			refreshPortfolio.setText("Refresh");
+			refreshPortfolio.setEnabled(true);
+			dbCursor.close();
+			return;
+		}
+		
+		do
+		{
+			// <GET STOCK>
+			URL url;
+			String stockTxt = "";
+			try {
+				// getting info from Yahoo Finance API [meat of the program]
+				url = new URL(
+						"http://download.finance.yahoo.com/d/quotes.csv?s="
+								+ dbCursor.getString(1) + ".to" +"&f=sl1p2n");
+				
+				//!!!!!!added .to TSX stocks only!!!!!!!!!!!//
+				
+				/*
+				 * s = stock symbol
+				 * l1 = last trade (price only)
+				 * p2 = change in percent
+				 * n = name of company
+				 */
+
+				InputStream stream = url.openStream();
+				
+				//convert stream to string
+				//reason to use bufferedReader is so there are more functions to use: readLine()
+				BufferedReader r = new BufferedReader(new InputStreamReader(stream));
+
+				stockTxt = r.readLine();
+			} catch (MalformedURLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			// </GET STOCK>
+			
+			if (stockTxt.length() == 0)
+			{
+				mToast.showErrorMessage("There is no Internet, can't refresh!");
+				refreshPortfolio.setText("Refresh");
+				refreshPortfolio.setEnabled(true);
+				// dbCursor.close();
+				return;
+			}
+			
+
+			
+			String[] tokens = stockTxt.split(",");
+			
+			ContentValues values = new ContentValues();
+	        values.put("Ticker", dbCursor.getString(1));
+	        values.put("Name", tokens[3]) ;
+	        values.put("Price", tokens[1]) ;
+	        values.put("Change", tokens[2]) ;
+			db.update("portfolio", values, "Ticker='" + dbCursor.getString(1) + "'", null);
+
+		} while (dbCursor.moveToNext()) ;
+		// dbCursor.close();
+		
+		portfolioListViewRefresh() ;
+
+		refreshPortfolio.setText("Refresh");
+		refreshPortfolio.setEnabled(true);
+		return;
+	}
+	
+	
+	public void portfolioListViewRefresh() {
+		Cursor dbCursor = db.rawQuery("SELECT _id,Ticker,Name,Price,Change FROM portfolio WHERE 1=1", null);
+		startManagingCursor (dbCursor) ;
+		adapter = new SimpleCursorAdapter(this,	R.layout.portfolio_item, dbCursor, new String[] {"_id","Ticker","Name","Price","Change"}, new int[] {R.id.pfliID,R.id.pfliTicker,R.id.pfliName,R.id.pfliPrice,R.id.pfliChange});
+		portfolio.setAdapter(adapter);
+		// dbCursor.close() ;
+		return ;
+	}
+	
+	public void summaryRecordBuy(String ticker, String price, int amount) {
+		Cursor dbCursor = db.rawQuery("SELECT Value FROM gamestats WHERE Field='FUNDS'", null);
+		startManagingCursor (dbCursor) ;
+		dbCursor.moveToFirst() ;
+		// FUNDS
+		BigDecimal bdfunds = new BigDecimal(dbCursor.getString(0));
+		BigDecimal bdPrice = new BigDecimal(price);
+		bdfunds = bdfunds.add(bdPrice.multiply(new BigDecimal(amount)).negate()) ;
+		ContentValues values = new ContentValues();
+        values.put("Value", bdfunds.toString());
+        db.update("gamestats", values, "Field='FUNDS'", null);
+        
+        // History
+        values = new ContentValues();
+        values.put("Ticker", ticker);
+        values.put("Price", price);
+        values.put("Amount", amount);
+        values.put("Direction", "Bought");
+        db.insert("portfolio", "_id", values) ;
+        return ;
+	}
+	
+	public void summaryRecordSell(String ticker, String price, int amount) {
+		Cursor dbCursor = db.rawQuery("SELECT Value FROM gamestats WHERE Field='FUNDS'", null);
+		startManagingCursor (dbCursor) ;
+		dbCursor.moveToFirst() ;
+		// FUNDS
+		BigDecimal bdfunds = new BigDecimal(dbCursor.getString(0));
+		BigDecimal bdPrice = new BigDecimal(price);
+		bdfunds = bdfunds.add(bdPrice.multiply(new BigDecimal(amount))) ;
+		ContentValues values = new ContentValues();
+        values.put("Value", bdfunds.toString());
+        db.update("gamestats", values, "Field='FUNDS'", null);
+        
+        // History
+        values = new ContentValues();
+        values.put("Ticker", ticker);
+        values.put("Price", price);
+        values.put("Amount", amount);
+        values.put("Direction", "Sold");
+        db.insert("portfolio", "_id", values) ;
+        return ;
 	}
 	
 }
