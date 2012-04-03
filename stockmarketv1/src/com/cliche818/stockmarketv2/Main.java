@@ -234,7 +234,8 @@ public class Main extends ListActivity implements OnClickListener {
 		portfolio = (ListView) findViewById(R.id.pfList);
 		
 		// Prep the portfolio lists
-		portfolioRefreshData(null) ;
+		// portfolioRefreshData(null) ;				DNR (Do Not Refresh)
+		portfolioListViewRefresh() ;
 		// ------------------------------------------- END PORTFOLIO STUFF -----------------------------------------------//
 	}
 	
@@ -582,7 +583,7 @@ public class Main extends ListActivity implements OnClickListener {
 	// Delete button handler for portfolio view
 	public void portfolioDelete(View v) {
 		// get row layout object
-		LinearLayout row = (LinearLayout)v.getParent();
+		RelativeLayout row = (RelativeLayout)v.getParent();
 		// get label from layout
         TextView ticker = (TextView)row.getChildAt(1);
         // da query
