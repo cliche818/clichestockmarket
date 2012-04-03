@@ -71,6 +71,7 @@ public class Main extends ListActivity implements OnClickListener {
 	Button refreshSimulation;
 	Button saveToPortfolio ;
 	Button refreshPortfolio;
+	ImageView lineDivider;
 	
 	//database variable
 	private StockDBAdapter sDbHelper;
@@ -162,6 +163,10 @@ public class Main extends ListActivity implements OnClickListener {
 		getQuote = (Button) findViewById(R.id.get_quote_button);
 		saveToPortfolio = (Button) findViewById(R.id.save_to_portfolio_button) ;
 		refreshPortfolio = (Button) findViewById(R.id.refresh_portfolio_button) ;
+		
+		
+		lineDivider = (ImageView) findViewById(R.id.line_divider);
+		lineDivider.setVisibility(View.INVISIBLE);
 		
 		insertSimulation = (Button) findViewById(R.id.insert_button);
 		insertSimulation.setVisibility(View.INVISIBLE);
@@ -738,6 +743,7 @@ public class Main extends ListActivity implements OnClickListener {
 			//setNoOfStocks.setEnabled(false);
 			insertSimulation.setVisibility(View.INVISIBLE);
 			setNoOfStocks.setVisibility(View.INVISIBLE);
+			lineDivider.setVisibility(View.INVISIBLE);
 			
 			//also invis save to portfolio button
 			saveToPortfolio.setVisibility(View.INVISIBLE);
@@ -756,6 +762,7 @@ public class Main extends ListActivity implements OnClickListener {
 			//only now is it possible to add stock symbols to database
 			insertSimulation.setVisibility(View.VISIBLE);
 			setNoOfStocks.setVisibility(View.VISIBLE);
+			lineDivider.setVisibility(View.VISIBLE);
 			//insertSimulation.setEnabled(true);
 			//setNoOfStocks.setEnabled(true);
 			
