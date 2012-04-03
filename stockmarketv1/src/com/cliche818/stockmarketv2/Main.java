@@ -147,7 +147,8 @@ public class Main extends ListActivity implements OnClickListener {
 		
 		setNoOfStocks = (EditText) findViewById(R.id.setNoOfStocks);
 		setNoOfStocks.setOnEditorActionListener(mInsertSimulationListener);
-		setNoOfStocks.setEnabled(false);
+		setNoOfStocks.setVisibility(View.INVISIBLE);
+		//setNoOfStocks.setEnabled(false);
 		
 		companyNameOut = (TextView) findViewById(R.id.companyNameOutput);
 		symbolOut = (TextView) findViewById(R.id.stockSymbolOutput);
@@ -163,7 +164,8 @@ public class Main extends ListActivity implements OnClickListener {
 		refreshPortfolio = (Button) findViewById(R.id.refresh_portfolio_button) ;
 		
 		insertSimulation = (Button) findViewById(R.id.insert_button);
-		insertSimulation.setEnabled(false);
+		insertSimulation.setVisibility(View.INVISIBLE);
+		//insertSimulation.setEnabled(false);
 
 		refreshSimulation = (Button) findViewById(R.id.refreshSimulation);
 		
@@ -731,10 +733,14 @@ public class Main extends ListActivity implements OnClickListener {
 			priceOut.setText(stockQuote);
 			changePercentageOut.setText(stockChangePercentage);
 			
-			//only now is it possible to add stock symbols to database
-			insertSimulation.setEnabled(false);
-			setNoOfStocks.setEnabled(false);
+			//It is NOT possible to add stock symbols to database
+			//insertSimulation.setEnabled(false);
+			//setNoOfStocks.setEnabled(false);
+			insertSimulation.setVisibility(View.INVISIBLE);
+			setNoOfStocks.setVisibility(View.INVISIBLE);
 			
+			//also invis save to portfolio button
+			saveToPortfolio.setVisibility(View.INVISIBLE);
 			
 			
 		}
@@ -746,6 +752,13 @@ public class Main extends ListActivity implements OnClickListener {
 			priceOut.setText("Stock Quote: " + stockQuote);
 			changePercentageOut.setText("Percent Change: " + stockChangePercentage + "%");
 			lastTicker = stockSymbol ;
+			
+			//only now is it possible to add stock symbols to database
+			insertSimulation.setVisibility(View.VISIBLE);
+			setNoOfStocks.setVisibility(View.VISIBLE);
+			//insertSimulation.setEnabled(true);
+			//setNoOfStocks.setEnabled(true);
+			
 			// Show save to portfolio button
 			if (existInDB(lastTicker)) {
 				saveToPortfolio.setText("Already in portfolio") ;
@@ -762,9 +775,7 @@ public class Main extends ListActivity implements OnClickListener {
 		getQuote.setText("Get Stock Quote");
 		getQuote.setEnabled(true);
 		
-		//only now is it possible to add stock symbols to database
-		insertSimulation.setEnabled(true);
-		setNoOfStocks.setEnabled(true);
+		
 	
 	}
 	
