@@ -19,7 +19,7 @@ public class YahooCommunicator {
 	private static final String TAG = "YahooCommunicator";
 		
 	private Main mService;
-	public enum Functions {unknown, getStockQuote, refreshOne, refreshAll};
+	public enum Functions {unknown, getStockQuote, refreshOne, refreshAll, refreshPortfolio};
 	private Functions mCaller = Functions.unknown;
 	private Cursor mCur;
 	private Dialog mSellDialog;
@@ -69,6 +69,18 @@ public class YahooCommunicator {
 		mCaller = Functions.refreshAll;
 		return true;
 	}	
+	
+	public boolean refreshPortfolio (Cursor cur)
+	{
+		if (isRunning)
+			return false;
+		isRunning = true;
+		mCur = cur;
+		getStocksAsync refreshPortfolioTask = new getStocksAsync();
+		refreshPortfolioTask.execute(cur.getString(1));
+		mCaller = Functions.refreshPortfolio;
+		return true;
+	}
 	
 	
 	public void moreInfo (Cursor cur)
@@ -142,6 +154,10 @@ public class YahooCommunicator {
 			
 			case refreshAll:
 				mService.refreshALLAftermath(stockTxt, mCur);
+				break;
+				
+			case refreshPortfolio:
+				mService.portfolioRefreshAftermath(stockTxt, mCur);
 				break;
 			}
 

@@ -105,6 +105,7 @@ public class Main extends ListActivity implements OnClickListener {
 	
 	// Stored variables
 	String lastTicker ;
+	String lastStockTxt; //this is very hack, very bad form, just a temp fix
 	
 	//class variables to make my life easy
 	String stockCompanyName = "N/A";
@@ -571,6 +572,25 @@ public class Main extends ListActivity implements OnClickListener {
 		if (ticker != null && ticker != "") {
 			ContentValues values = new ContentValues();
 	        values.put("Ticker", ticker);
+	        
+	        /*TextView companyNameOut;
+	    	TextView symbolOut;
+	    	TextView priceOut;
+	    	TextView changePercentageOut;*/
+	        
+	        String[] tokens = lastStockTxt.split(",");
+
+			String stockQuote = tokens[1];
+			String stockChangePercentage = tokens[2];
+			String stockCompanyName = tokens[3];
+	        
+	        values.put("Name", stockCompanyName) ;
+	        values.put("Price", stockQuote) ;
+	        values.put("Change", stockChangePercentage.toString()) ;
+			//db.update("portfolio", values, "Ticker='" + tokens[0] + "'", null);
+	        
+	        //jeff
+	        
 			if (-1 != db.insert("portfolio", "_id", values)) {
 				// update the portfolio page upon success
 				portfolioRefreshData(null) ;
@@ -691,6 +711,7 @@ public class Main extends ListActivity implements OnClickListener {
 	public void getQuoteButtonAftermath (String stockTxt){
 		
 		lastTicker = "" ;
+		lastStockTxt = "";
 		if (stockTxt == null)
 		{
 			mToast.showErrorMessage("Busy refreshing!");
@@ -758,6 +779,7 @@ public class Main extends ListActivity implements OnClickListener {
 			priceOut.setText("Stock Quote: " + stockQuote);
 			changePercentageOut.setText("Percent Change: " + stockChangePercentage + "%");
 			lastTicker = stockSymbol ;
+			lastStockTxt = stockTxt;
 			
 			//only now is it possible to add stock symbols to database
 			insertSimulation.setVisibility(View.VISIBLE);
@@ -1064,6 +1086,8 @@ public class Main extends ListActivity implements OnClickListener {
 	 */
 	
 	public void saveToPortfolioOnClick() {
+		
+		Log.d(TAG, lastTicker);
 		// Report if no ticker inserted
 		if (lastTicker == null || lastTicker == "") {
 			Toast dbError = Toast.makeText(Main.this,
@@ -1099,14 +1123,22 @@ public class Main extends ListActivity implements OnClickListener {
 		Cursor dbCursor = db.rawQuery("SELECT _id, Ticker FROM portfolio WHERE 1=1", null);
 		startManagingCursor (dbCursor) ;
 		
-		if (!dbCursor.moveToFirst()) {
+		
+		//checks if portfolio is empty
+		if (dbCursor.isAfterLast()) {
 			refreshPortfolio.setText("Refresh");
 			refreshPortfolio.setEnabled(true);
 			dbCursor.close();
 			return;
 		}
+		else if (dbCursor.moveToFirst()){
+		refreshPortfolio.setText("Refreshing");
+		refreshPortfolio.setEnabled(false);
+		mYahooCommunicator.refreshPortfolio(dbCursor);
+		return;
+		}
 		
-		do
+		/*do
 		{
 			// <GET STOCK>
 			URL url;
@@ -1116,15 +1148,7 @@ public class Main extends ListActivity implements OnClickListener {
 				url = new URL(
 						"http://download.finance.yahoo.com/d/quotes.csv?s="
 								+ dbCursor.getString(1) + ".to" +"&f=sl1p2n");
-				
-				//!!!!!!added .to TSX stocks only!!!!!!!!!!!//
-				
-				/*
-				 * s = stock symbol
-				 * l1 = last trade (price only)
-				 * p2 = change in percent
-				 * n = name of company
-				 */
+
 
 				InputStream stream = url.openStream();
 				
@@ -1170,8 +1194,46 @@ public class Main extends ListActivity implements OnClickListener {
 
 		refreshPortfolio.setText("Refresh");
 		refreshPortfolio.setEnabled(true);
-		return;
+		return;*/
 	}
+	
+	/*
+	 * This is a hack to use AsyncTask for refreshing portfolio (let's hope it works)
+	 */
+	public void portfolioRefreshAftermath (String stockTxt, Cursor cur){
+		
+		Log.d(TAG, stockTxt);
+		if (stockTxt.length() == 0)
+		{
+			mToast.showErrorMessage("There is no Internet, can't refresh!");
+			refreshPortfolio.setText("Refresh");
+			refreshPortfolio.setEnabled(true);
+			cur.close();
+			return;
+		}
+		
+		String[] tokens = stockTxt.split(",");
+		
+		
+		ContentValues values = new ContentValues();
+        values.put("Ticker", tokens[0]);
+        values.put("Name", tokens[3]) ;
+        values.put("Price", tokens[1]) ;
+        values.put("Change", tokens[2]) ;
+		db.update("portfolio", values, "Ticker='" + tokens[0] + "'", null);
+		
+		if (cur.moveToNext())
+		{
+			mYahooCommunicator.refreshPortfolio(cur);
+			return;
+		}
+		
+		portfolioListViewRefresh() ;
+		refreshPortfolio.setText("Refresh");
+		refreshPortfolio.setEnabled(true);
+		
+	}
+		
 	
 	
 	public void portfolioListViewRefresh() {
@@ -1183,7 +1245,9 @@ public class Main extends ListActivity implements OnClickListener {
 		return ;
 	}
 	
-	public void summaryRecordBuy(String ticker, String price, int amount) {
+	
+	//not used
+	/*public void summaryRecordBuy(String ticker, String price, int amount) {
 		Cursor dbCursor = db.rawQuery("SELECT Value FROM gamestats WHERE Field='FUNDS'", null);
 		startManagingCursor (dbCursor) ;
 		dbCursor.moveToFirst() ;
@@ -1203,9 +1267,10 @@ public class Main extends ListActivity implements OnClickListener {
         values.put("Direction", "Bought");
         db.insert("portfolio", "_id", values) ;
         return ;
-	}
+	}*/
 	
-	public void summaryRecordSell(String ticker, String price, int amount) {
+	//not used
+	/*public void summaryRecordSell(String ticker, String price, int amount) {
 		Cursor dbCursor = db.rawQuery("SELECT Value FROM gamestats WHERE Field='FUNDS'", null);
 		startManagingCursor (dbCursor) ;
 		dbCursor.moveToFirst() ;
@@ -1225,6 +1290,6 @@ public class Main extends ListActivity implements OnClickListener {
         values.put("Direction", "Sold");
         db.insert("portfolio", "_id", values) ;
         return ;
-	}
+	}*/
 	
 }
