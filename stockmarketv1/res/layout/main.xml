@@ -136,6 +136,7 @@
 		<!-- END OF STOCK QUOTE  -->
 				
 		<!-- PORTFOLIO  -->
+		<!-- 
 		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 			android:id="@+id/portfolio"
 	   		android:orientation="vertical"
@@ -158,6 +159,7 @@
 	        </ListView>
 	   		
 	   	</LinearLayout>
+	   	-->
 		<!-- END OF PORTFOLIO -->
 		
 		<!--  SIMULATION  -->

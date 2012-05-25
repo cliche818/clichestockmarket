@@ -156,9 +156,9 @@ public class YahooCommunicator {
 				mService.refreshALLAftermath(stockTxt, mCur);
 				break;
 				
-			case refreshPortfolio:
+			/*case refreshPortfolio:
 				mService.portfolioRefreshAftermath(stockTxt, mCur);
-				break;
+				break;*/
 			}
 
 		}	

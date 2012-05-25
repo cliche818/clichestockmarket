@@ -99,7 +99,7 @@ public class Main extends ListActivity implements OnClickListener {
 	Cursor dbCursor;
 	
 	// Lists
-	ListView portfolio;
+	//ListView portfolio;
 	ListView gameAsset;
 	ListAdapter adapter;
 	
@@ -162,8 +162,8 @@ public class Main extends ListActivity implements OnClickListener {
 		updateOut = (TextView) findViewById (R.id.updateOutput);
 
 		getQuote = (Button) findViewById(R.id.get_quote_button);
-		saveToPortfolio = (Button) findViewById(R.id.save_to_portfolio_button) ;
-		refreshPortfolio = (Button) findViewById(R.id.refresh_portfolio_button) ;
+		//saveToPortfolio = (Button) findViewById(R.id.save_to_portfolio_button) ;
+		//refreshPortfolio = (Button) findViewById(R.id.refresh_portfolio_button) ;
 		
 		
 		lineDivider = (ImageView) findViewById(R.id.line_divider);
@@ -203,10 +203,11 @@ public class Main extends ListActivity implements OnClickListener {
 		tabHost.addTab(stockQuoteScreen);
 		
 		//Setting up Portfolio
-		TabHost.TabSpec portfolioScreen = tabHost.newTabSpec("Portfolio");
+		/*TabHost.TabSpec portfolioScreen = tabHost.newTabSpec("Portfolio");
 		portfolioScreen.setContent(R.id.portfolio);
 		portfolioScreen.setIndicator("Portfolio", getResources().getDrawable(R.drawable.ic_action_copy));
 		tabHost.addTab(portfolioScreen);
+		*/
 		
 		//Setting up Simulation Module
 		TabHost.TabSpec simulationScreen = tabHost.newTabSpec("simulationTab");
@@ -236,14 +237,14 @@ public class Main extends ListActivity implements OnClickListener {
 		refreshSimulation.setOnClickListener(this);
 
 		// ------------------------------------------- PORTFOLIO STUFF -----------------------------------------------//
-		saveToPortfolio.setOnClickListener(this) ;
+		/*saveToPortfolio.setOnClickListener(this) ;
 
 		// Get portfolio variables
 		portfolio = (ListView) findViewById(R.id.pfList);
 		
 		// Prep the portfolio lists
 		// portfolioRefreshData(null) ;				DNR (Do Not Refresh)
-		portfolioListViewRefresh() ;
+		portfolioListViewRefresh() ;*/
 		// ------------------------------------------- END PORTFOLIO STUFF -----------------------------------------------//
 	}
 	
@@ -371,7 +372,7 @@ public class Main extends ListActivity implements OnClickListener {
 			
 			//setup text (about message)
 			TextView aboutText = (TextView) aboutDialog.findViewById(R.id.aboutWindow);
-			aboutText.setText("Written by Fangbo and Jeff.\n\nShoutout to StackOverflow and Frank\n");
+			aboutText.setText("Written by Jeff.\n");
 			
 			//do the exit button
 			Button aboutButton = (Button) aboutDialog.findViewById(R.id.aboutButton);
@@ -554,7 +555,7 @@ public class Main extends ListActivity implements OnClickListener {
 	
 	// PORTFOLIO FUNCTIONS
 	// Checks if the given ticker already exists in the database (true for yes false for no)
-	protected boolean existInDB(String ticker){
+	/*protected boolean existInDB(String ticker){
 		if (ticker != null && ticker != "") {
 			dbCursor = db.rawQuery("SELECT _id FROM portfolio WHERE Ticker = \"" + ticker + "\"", null) ;
 			return (dbCursor.getCount()>0) ;
@@ -566,17 +567,15 @@ public class Main extends ListActivity implements OnClickListener {
 			return false ;
 		}
 	}
+	*/
 	
 	// Adds a ticker to the portfolio db (true for okay false for error)
+	/*
 	protected boolean insertInDB(String ticker) {
 		if (ticker != null && ticker != "") {
 			ContentValues values = new ContentValues();
 	        values.put("Ticker", ticker);
 	        
-	        /*TextView companyNameOut;
-	    	TextView symbolOut;
-	    	TextView priceOut;
-	    	TextView changePercentageOut;*/
 	        
 	        String[] tokens = lastStockTxt.split(",");
 
@@ -628,7 +627,7 @@ public class Main extends ListActivity implements OnClickListener {
         // reset layout so it actually shows
         portfolioListViewRefresh() ;
         
-	}
+	}*/
 	
 	private TextView.OnEditorActionListener mGetQuoteListener =
 		new TextView.OnEditorActionListener () {
@@ -670,9 +669,9 @@ public class Main extends ListActivity implements OnClickListener {
 		case R.id.refreshSimulation:
 			refreshSimulationOnClick();
 			break;
-		case R.id.save_to_portfolio_button:
+		/*case R.id.save_to_portfolio_button:
 			saveToPortfolioOnClick();
-			break;
+			break;*/
 		
 		}
 	}
@@ -767,7 +766,7 @@ public class Main extends ListActivity implements OnClickListener {
 			lineDivider.setVisibility(View.INVISIBLE);
 			
 			//also invis save to portfolio button
-			saveToPortfolio.setVisibility(View.INVISIBLE);
+			//saveToPortfolio.setVisibility(View.INVISIBLE);
 			
 			
 		}
@@ -789,14 +788,14 @@ public class Main extends ListActivity implements OnClickListener {
 			//setNoOfStocks.setEnabled(true);
 			
 			// Show save to portfolio button
-			if (existInDB(lastTicker)) {
+			/*if (existInDB(lastTicker)) {
 				saveToPortfolio.setText("Already in portfolio") ;
 				saveToPortfolio.setClickable(false) ;
 			} else {
 				saveToPortfolio.setText("Save to Portfolio") ;
 				saveToPortfolio.setClickable(true) ;
 			}
-			saveToPortfolio.setVisibility(View.VISIBLE) ;	
+			saveToPortfolio.setVisibility(View.VISIBLE) ;	*/
 		}
 		
 		
@@ -1085,7 +1084,7 @@ public class Main extends ListActivity implements OnClickListener {
 	 * Global Toast used to display error messages
 	 */
 	
-	public void saveToPortfolioOnClick() {
+	/*public void saveToPortfolioOnClick() {
 		
 		Log.d(TAG, lastTicker);
 		// Report if no ticker inserted
@@ -1116,7 +1115,7 @@ public class Main extends ListActivity implements OnClickListener {
 			saveToPortfolio.setClickable(false) ;
 		}
 	}
-	
+
 	public void portfolioRefreshData(View v) {
 		refreshPortfolio.setText("Refreshing");
 		refreshPortfolio.setEnabled(false);
@@ -1138,69 +1137,12 @@ public class Main extends ListActivity implements OnClickListener {
 		return;
 		}
 		
-		/*do
-		{
-			// <GET STOCK>
-			URL url;
-			String stockTxt = "";
-			try {
-				// getting info from Yahoo Finance API [meat of the program]
-				url = new URL(
-						"http://download.finance.yahoo.com/d/quotes.csv?s="
-								+ dbCursor.getString(1) + ".to" +"&f=sl1p2n");
-
-
-				InputStream stream = url.openStream();
-				
-				//convert stream to string
-				//reason to use bufferedReader is so there are more functions to use: readLine()
-				BufferedReader r = new BufferedReader(new InputStreamReader(stream));
-
-				stockTxt = r.readLine();
-			} catch (MalformedURLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			// </GET STOCK>
-			
-			if (stockTxt.length() == 0)
-			{
-				mToast.showErrorMessage("There is no Internet, can't refresh!");
-				refreshPortfolio.setText("Refresh");
-				refreshPortfolio.setEnabled(true);
-				// dbCursor.close();
-				return;
-			}
-			
-
-			
-			String[] tokens = stockTxt.split(",");
-			
-			ContentValues values = new ContentValues();
-	        values.put("Ticker", dbCursor.getString(1));
-	        values.put("Name", tokens[3]) ;
-	        values.put("Price", tokens[1]) ;
-	        values.put("Change", tokens[2]) ;
-			db.update("portfolio", values, "Ticker='" + dbCursor.getString(1) + "'", null);
-
-		} while (dbCursor.moveToNext()) ;
-		// dbCursor.close();
-		
-		portfolioListViewRefresh() ;
-
-		refreshPortfolio.setText("Refresh");
-		refreshPortfolio.setEnabled(true);
-		return;*/
-	}
+	}*/
 	
 	/*
 	 * This is a hack to use AsyncTask for refreshing portfolio (let's hope it works)
 	 */
-	public void portfolioRefreshAftermath (String stockTxt, Cursor cur){
+	/*public void portfolioRefreshAftermath (String stockTxt, Cursor cur){
 		
 		Log.d(TAG, stockTxt);
 		if (stockTxt.length() == 0)
@@ -1233,9 +1175,9 @@ public class Main extends ListActivity implements OnClickListener {
 		refreshPortfolio.setEnabled(true);
 		
 	}
-		
+		*/
 	
-	
+	/*
 	public void portfolioListViewRefresh() {
 		Cursor dbCursor = db.rawQuery("SELECT _id,Ticker,Name,Price,Change FROM portfolio WHERE 1=1", null);
 		startManagingCursor (dbCursor) ;
@@ -1244,7 +1186,7 @@ public class Main extends ListActivity implements OnClickListener {
 		// dbCursor.close() ;
 		return ;
 	}
-	
+	*/
 	
 	//not used
 	/*public void summaryRecordBuy(String ticker, String price, int amount) {
